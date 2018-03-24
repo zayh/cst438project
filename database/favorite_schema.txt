@@ -1,0 +1,12 @@
+DROP TABLE favorite;
+CREATE TABLE IF NOT EXISTS favorite (
+	favorite_id BIGINT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,  
+	user_id BIGINT,
+	album_id BIGINT,
+	FOREIGN KEY (album_id)
+		REFERENCES album(album_id)
+		ON DELETE CASCADE,
+	FOREIGN KEY (user_id) 
+		REFERENCES user(user_id) 
+		ON DELETE CASCADE
+);
