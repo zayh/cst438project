@@ -174,8 +174,8 @@ class Account:
       return False
 
   def isUsernameAvailable(self, username):
-  ''' Checks to see if the given username is already in use '''
-  ''' Test with test_isUsernameAvailable '''
+    ''' Checks to see if the given username is already in use '''
+    ''' Test with test_isUsernameAvailable '''
     available = False;
     cnx = self.connectToDatabase()
     if cnx == False:
