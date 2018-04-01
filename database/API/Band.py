@@ -108,7 +108,11 @@ class Band:
       return False
       
   def setSoloArtist(self, boolean):
-    self.is_solo_artist = boolean
+    success = False;
+    if (1):
+      self.is_solo_artist = boolean
+      success = True
+    return success
   
   ####
 
@@ -143,3 +147,32 @@ class Band:
         success = True
     return success
   
+  def saveToDatabase(self):
+    ''' Saves current object to the database, using the primary index '''
+    success = False
+    NoSqlErrors = True
+    if self.getBandID() != '':
+      cnx = self.connectToDatabase()
+      if cnx != False:
+        if self.isSoloArtist() == True:
+          soloArtist = 1
+        else:
+          soloArtist = 0
+        cursor = cnx.cursor()
+        query = ("UPDATE band SET band_name = %s, is_solo_artist = %s "
+          "WHERE band_id = %s")
+        try:
+          cursor.execute(query, 
+            (self.getBandName(), 
+            soloArtist,
+            self.getBandID()) 
+          )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          self.getBy('band_id', self.getBandID())
+          success = True
+        cursor.close()
+        cnx.close()
+    return success

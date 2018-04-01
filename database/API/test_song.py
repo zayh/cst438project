@@ -83,4 +83,14 @@ class TestSong(unittest.TestCase):
     self.assertFalse(object.isSongNameAvailable('Sad But True', 1))
     self.assertTrue(object.isSongNameAvailable('Enter Sandman', 1))
 
+  def test_saveToDatabase(self):
+    object = Song()
+    self.assertTrue(object.getBy('song_id', 7))
+    self.assertFalse(object.isSoloRelease())
+    self.assertTrue(object.setSoloRelease(True))
+    self.assertTrue(object.saveToDatabase())
+    self.assertTrue(object.isSoloRelease())
+    self.assertTrue(object.setSoloRelease(False))
+    self.assertTrue(object.saveToDatabase())
+    self.assertFalse(object.isSoloRelease())  
     

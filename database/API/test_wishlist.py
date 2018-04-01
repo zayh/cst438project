@@ -72,3 +72,18 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object2.getWishlistID(), '')
     
     self.assertTrue(object1.deleteFromDatabase())
+
+  def test_saveToDatabase(self):
+    object1 = Wishlist()
+    self.assertTrue(object1.getBy('wishlist_id', 1))
+    self.assertEqual(object1.getAlbumID(), 2)
+    self.assertTrue(object1.setAlbumID(48))
+    self.assertTrue(object1.saveToDatabase())
+    
+    object2 = Wishlist()
+    self.assertTrue(object2.getBy('wishlist_id', 1))
+    self.assertEqual(object2.getAlbumID(), 48)
+    self.assertTrue(object2.setAlbumID(2))
+    self.assertTrue(object2.saveToDatabase())
+       
+    

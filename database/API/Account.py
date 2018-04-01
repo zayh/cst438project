@@ -24,7 +24,6 @@ class Account:
         database='musicproject'
       )
     except mysql.connector.Error as err:
-      print ("Something went wrong: {}".format(err))
       cnx = False
     
     return cnx
@@ -212,4 +211,34 @@ class Account:
     else:
       success = False
     return success
-  
+ 
+  def saveToDatabase(self):
+    ''' Saves current object to the database, using account_id '''
+    success = False
+    NoSqlErrors = True
+    if self.getAccountID() != '':
+      cnx = self.connectToDatabase()
+      if cnx != False:
+        cursor = cnx.cursor()
+        query = ("UPDATE account SET username = %s, firstname = %s, lastname = %s, lyric = %s, password = %s "
+          "WHERE account_id = %s")
+        try:
+          cursor.execute(query, 
+            (self.getUsername(), 
+            self.getFirstname(), 
+            self.getLastname(), 
+            self.getLyric(),
+            self.getPassword(),
+            self.getAccountID(),) 
+          )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          self.getBy('account_id', self.getAccountID())
+          success = True
+        cursor.close()
+        cnx.close()
+    return success
+        
+        

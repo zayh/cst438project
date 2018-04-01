@@ -162,4 +162,28 @@ class Wishlist:
         cnx.close()
         success = True
     return success
+    
+  def saveToDatabase(self):
+    ''' Saves current object to the database, using the primary index '''
+    success = False
+    NoSqlErrors = True
+    if self.getWishlistID() != '':
+      cnx = self.connectToDatabase()
+      if cnx != False:
+        cursor = cnx.cursor()
+        query = ("UPDATE wishlist SET account_id = %s, album_id = %s "
+          "WHERE wishlist_id = %s")
+        try:
+          cursor.execute(query, 
+            (self.getAccountID(), self.getAlbumID(), self.getWishlistID()) 
+          )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          self.getBy('wishlist_id', self.getWishlistID())
+          success = True
+        cursor.close()
+        cnx.close()
+    return success
   

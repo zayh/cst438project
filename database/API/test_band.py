@@ -72,4 +72,14 @@ class TestBand(unittest.TestCase):
     self.assertFalse(object.isBandNameAvailable('Metallica'))
     self.assertTrue(object.isBandNameAvailable('Spinal Tap'))
 
+  def test_saveToDatabase(self):
+    object = Band()
+    self.assertTrue(object.getBy('band_id', 4))
+    self.assertFalse(object.isSoloArtist())
+    self.assertTrue(object.setSoloArtist(True))
+    self.assertTrue(object.saveToDatabase())
+    self.assertTrue(object.isSoloArtist())
+    self.assertTrue(object.setSoloArtist(False))
+    self.assertTrue(object.saveToDatabase())
+    self.assertFalse(object.isSoloArtist())   
     

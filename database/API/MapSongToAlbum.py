@@ -176,3 +176,27 @@ class MapSongToAlbum:
         success = True
     return success
   
+  def saveToDatabase(self):
+    ''' Saves current object to the database, using the primary index '''
+    success = False
+    NoSqlErrors = True
+    if self.getMapSongToAlbumID() != '':
+      cnx = self.connectToDatabase()
+      if cnx != False:
+        cursor = cnx.cursor()
+        query = ("UPDATE map_song_to_album SET song_id = %s, album_id = %s , track_number = %s "
+          "WHERE map_song_to_album_id = %s")
+        try:
+          cursor.execute(query, 
+            (self.getSongID(), self.getAlbumID(), self.getTrackNumber(), self.getMapSongToAlbumID()) 
+          )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          self.getBy('map_song_to_album_id', self.getMapSongToAlbumID())
+          success = True
+        cursor.close()
+        cnx.close()
+    return success
+    

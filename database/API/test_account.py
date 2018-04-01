@@ -78,5 +78,16 @@ class TestAccount(unittest.TestCase):
     object = Account()
     self.assertTrue(object.isUsernameAvailable('bob'))
     self.assertFalse(object.isUsernameAvailable('jay'))
+    
+  def test_saveToDatabase(self):
+    object = Account()
+    self.assertTrue(object.getBy('account_id', 3))
+    self.assertEqual(object.getLyric(), 'pour some sugar on me')
+    self.assertTrue(object.setLyric('we are the champions'))
+    self.assertTrue(object.saveToDatabase())
+    self.assertEqual(object.getLyric(), 'we are the champions')
+    self.assertTrue(object.setLyric('pour some sugar on me'))
+    self.assertTrue(object.saveToDatabase())
+    self.assertEqual(object.getLyric(), 'pour some sugar on me')
 
     
