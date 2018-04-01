@@ -202,3 +202,32 @@ class Album:
         success = True
     return success
   
+  def saveToDatabase(self):
+    ''' Saves current object to the database, using the primary index '''
+    success = False
+    NoSqlErrors = True
+    if self.getAlbumID() != '':
+      cnx = self.connectToDatabase()
+      if cnx != False:
+        cursor = cnx.cursor()
+        query = ("UPDATE album SET release_date = %s, album_name = %s, genre = %s, url_to_buy = %s, band_id = %s "
+          "WHERE album_id = %s")
+        try:
+          cursor.execute(query, 
+            (self.getReleaseDate(), 
+            self.getAlbumName(), 
+            self.getGenre(), 
+            self.getURLtoBuy(),
+            self.getBandID(),
+            self.getAlbumID()) 
+          )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          self.getBy('album_id', self.getAlbumID())
+          success = True
+        cursor.close()
+        cnx.close()
+    return success
+    

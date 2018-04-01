@@ -93,4 +93,14 @@ class TestAlbum(unittest.TestCase):
     self.assertFalse(object.isAlbumNameAvailable('Metallica', 1))
     self.assertTrue(object.isAlbumNameAvailable('Spinal Tap', 'This is Spinal Tap'))
 
+  def test_saveToDatabase(self):
+    object = Album()
+    self.assertTrue(object.getBy('album_id', 2))
+    self.assertEqual(object.getGenre(), 'Metal')
+    self.assertTrue(object.setGenre('Country'))
+    self.assertTrue(object.saveToDatabase())
+    self.assertEqual(object.getGenre(), 'Country')
+    self.assertTrue(object.setGenre('Metal'))
+    self.assertTrue(object.saveToDatabase())
+    self.assertEqual(object.getGenre(), 'Metal')   
     
