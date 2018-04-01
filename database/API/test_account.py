@@ -13,21 +13,24 @@ class TestAccount(unittest.TestCase):
     self.assertEqual(object.getLyric(), '')
     self.assertEqual(object.getPassword(), '')
     
-  def test_new(self):
-    object = Account()
-    object.new('bobdylan','Bob','Dylan','kiss this guy','wh4tD1D#eS47?')
+  def test_populatedAccount(self):
+    object = Account('bobdylan','Bob','Dylan','kiss this guy')
     self.assertEqual(object.getAccountID(), '')
     self.assertEqual(object.getUsername(), 'bobdylan')
     self.assertEqual(object.getFirstname(), 'Bob')
     self.assertEqual(object.getLastname(), 'Dylan')
     self.assertEqual(object.getLyric(), 'kiss this guy')
+    
+  def testSetPassword(self):
+    object = Account('bobdylan','Bob','Dylan','kiss this guy')
+    self.assertTrue(object.addPassword('wh4tD1D#eS47?'))
     self.assertTrue(object.checkPassword('wh4tD1D#eS47?'))
     self.assertFalse(object.checkPassword('wh4tD1D#eS47'))
     
   def test_toJSON(self):
-    object = Account()
-    object.new('bobdylan','Bob','Dylan','kiss this guy','wh4tD1D#eS47?')
-    self.assertEqual(object.toJSON(), "{ account_id: , username: 'bobdylan', firstname: 'Bob', lastname: 'Dylan', lyric: 'kiss this guy' }")
+    object = Account('bobdylan','Bob','Dylan','kiss this guy')
+    self.assertTrue(object.addPassword('wh4tD1D#eS47?'))
+    self.assertEqual(object.toJSON(), '{"account_id": "", "username": "bobdylan", "firstname": "Bob", "lastname": "Dylan", "lyric": "kiss this guy", "password": "b3e79af50eedc2409663b385c4f194a23699834e4363508953996e195715dd2c"}')
     
   def test_mutators(self):
     object = Account()
@@ -35,7 +38,7 @@ class TestAccount(unittest.TestCase):
     object.setFirstname('Mariah')
     object.setLastname('Carrey')
     object.setLyric("what's my line?")
-    object.setPassword("$$doGC4#,")
+    object.addPassword("$$doGC4#,")
     
     self.assertEqual(object.getUsername(), 'mcarrey')
     self.assertEqual(object.getFirstname(), 'Mariah')
@@ -61,23 +64,25 @@ class TestAccount(unittest.TestCase):
     self.assertEqual(object.getAccountID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Account()
-    object1.new('bobdylan','Bob','Dylan','kiss this guy','wh4tD1D#eS47?')
-    object1.addToDatabase()
+    object1 = Account('bobdylan','Bob','Dylan','kiss this guy')
+    self.assertFalse(object1.addToDatabase())
+    self.assertTrue(object1.addPassword('wh4tD1D#eS47'))
+    self.assertTrue(object1.addToDatabase())
 
     object2 = Account()
     self.assertTrue(object2.getBy('username', 'bobdylan'))
     self.assertNotEqual(object2.getAccountID, '')
-    object2.deleteFromDatabase()
+    self.assertTrue(object2.deleteFromDatabase())
 
     object3 = Account()
     self.assertFalse(object3.getBy('username', 'bobdylan'))
     self.assertEqual(object3.getAccountID(), '')
     
   def test_isUsernameAvailable(self):
-    object = Account()
-    self.assertTrue(object.isUsernameAvailable('bob'))
-    self.assertFalse(object.isUsernameAvailable('jay'))
+    object1 = Account('bob')
+    object2 = Account('jay')
+    self.assertTrue(object1.isUsernameAvailable())
+    self.assertFalse(object2.isUsernameAvailable())
     
   def test_saveToDatabase(self):
     object = Account()
