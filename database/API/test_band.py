@@ -11,30 +11,39 @@ class TestBand(unittest.TestCase):
     self.assertEqual(object.getBandName(), '')
     
   def test_new(self):
-    object = Band()
-    object.new('Spinal Tap')
-    self.assertEqual(object.getBandID(), '')
-    self.assertEqual(object.getBandName(), 'Spinal Tap')
-    self.assertFalse(object.isSoloArtist())
+    object1 = Band('Spinal Tap')
+    self.assertEqual(object1.getBandID(), '')
+    self.assertEqual(object1.getBandName(), 'Spinal Tap')
+    self.assertFalse(object1.isSoloArtist())
+    
+    object2 = Band('Prince', True)
+    self.assertEqual(object2.getBandID(), '')
+    self.assertEqual(object2.getBandName(), 'Prince')
+    self.assertTrue(object2.isSoloArtist())
     
   def test_toJSON(self):
-    object = Band()
-    object.new('Spinal Tap')
-    self.assertEqual(object.toJSON(), "{ band_id: , band_name: 'Spinal Tap', is_solo_artist: 'False' }")
+    object = Band('Spinal Tap')
+    self.assertEqual(object.toJSON(), '{"band_id": "", "band_name": "Spinal Tap", "is_solo_artist": false}')
+  
+  def test_fromJSON(self):
+    object1 = Band('Prince', True)
+    dataStr = object1.toJSON()
+    
+    object2 = Band()
+    self.assertTrue(object2.fromJSON(dataStr))
+    self.assertEqual(object2.getBandName(), 'Prince')
     
   def test_mutators_and_accessors(self):
-    object1 = Band()
-    object1.setBandName('Def Leppard')
-    object1.setSoloArtist(False)
+    object1 = Band('Def Leppard')
+    object1.setSoloArtist(True)
 
-    object2 = Band()
-    object2.setBandName('Prince')
-    object2.setSoloArtist(True)
+    object2 = Band('Prince', True)
+    object2.setSoloArtist(False)
     
     self.assertEqual(object1.getBandName(), 'Def Leppard')
     self.assertEqual(object2.getBandName(), 'Prince')
-    self.assertFalse(object1.isSoloArtist())
-    self.assertTrue(object2.isSoloArtist())
+    self.assertTrue(object1.isSoloArtist())
+    self.assertFalse(object2.isSoloArtist())
     
   def test_getByBandName(self):
     object = Band()
@@ -54,8 +63,7 @@ class TestBand(unittest.TestCase):
     self.assertEqual(object.getBandID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Band()
-    object1.new('Spinal Tap')
+    object1 = Band('Spinal Tap')
     object1.addToDatabase()
 
     object2 = Band()
@@ -68,9 +76,10 @@ class TestBand(unittest.TestCase):
     self.assertEqual(object3.getBandID(), '')
     
   def test_isBandNameAvailable(self):
-    object = Band()
-    self.assertFalse(object.isBandNameAvailable('Metallica'))
-    self.assertTrue(object.isBandNameAvailable('Spinal Tap'))
+    object1 = Band('Metallica')
+    object2 = Band('Spinal Tap Test')
+    self.assertFalse(object1.isBandNameAvailable())
+    self.assertTrue(object2.isBandNameAvailable())
 
   def test_saveToDatabase(self):
     object = Band()
