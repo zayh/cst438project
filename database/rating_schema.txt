@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS rating (
 	album_id BIGINT,
 	rating INT,
 	comment TEXT,
+	date DATE
 	FOREIGN KEY (album_id)
 		REFERENCES album(album_id)
 		ON DELETE CASCADE,
