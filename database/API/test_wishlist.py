@@ -72,5 +72,3 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object2.getWishlistID(), '')
     
     self.assertTrue(object1.deleteFromDatabase())
-
-    
