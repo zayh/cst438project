@@ -182,3 +182,33 @@ class Song:
         success = True
     return success
   
+  def saveToDatabase(self):
+    ''' Saves current object to the database, using the primary index '''
+    success = False
+    NoSqlErrors = True
+    if self.getSongID() != '':
+      cnx = self.connectToDatabase()
+      if cnx != False:
+        if self.isSoloRelease() == True:
+          soloRelease = 1
+        else:
+          soloRelease = 0
+        cursor = cnx.cursor()
+        query = ("UPDATE song SET song_name = %s, is_solo_release = %s, band_id = %s "
+          "WHERE song_id = %s")
+        try:
+          cursor.execute(query, 
+            (self.getSongName(), 
+            soloRelease,
+            self.getBandID(),
+            self.getSongID()) 
+          )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          self.getBy('song_id', self.getSongID())
+          success = True
+        cursor.close()
+        cnx.close()
+    return success

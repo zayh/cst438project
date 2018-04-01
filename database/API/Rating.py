@@ -185,7 +185,6 @@ class Rating:
 
     return notDuplicateComment
     
-    
   def deleteFromDatabase(self):
     ''' Deletes the object from the database '''
     ''' Test with test_SaveAndDeleteFromDatabase '''
@@ -200,5 +199,31 @@ class Rating:
         cursor.close()
         cnx.close()
         success = True
+    return success
+    
+  def saveToDatabase(self):
+    ''' Saves current object to the database, using the primary index '''
+    success = False
+    NoSqlErrors = True
+    if self.getRatingID() != '':
+      cnx = self.connectToDatabase()
+      if cnx != False:
+        cursor = cnx.cursor()
+        query = ("UPDATE rating SET account_id = %s, album_id = %s, rating = %s, comment = %s, date = %s "
+          "WHERE rating_id = %s")
+        try:
+          cursor.execute(query, 
+            (self.getAccountID(), self.getAlbumID(), 
+            self.getRating(), self.getComment(), 
+            self.getDate(), self.getRatingID()) 
+          )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          self.getBy('rating_id', self.getRatingID())
+          success = True
+        cursor.close()
+        cnx.close()
     return success
   

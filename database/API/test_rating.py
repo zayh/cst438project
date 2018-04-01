@@ -86,4 +86,16 @@ class TestRating(unittest.TestCase):
     
     self.assertTrue(object1.deleteFromDatabase())
 
+  def test_saveToDatabase(self):
+    object1 = Rating()
+    self.assertTrue(object1.getBy('rating_id', 4))
+    self.assertEqual(object1.getRating(), 5)
+    self.assertTrue(object1.setRating(1))
+    self.assertTrue(object1.saveToDatabase())
+    
+    object2 = Rating()
+    self.assertTrue(object2.getBy('rating_id', 4))
+    self.assertEqual(object2.getRating(), 1)
+    self.assertTrue(object2.setRating(5))
+    self.assertTrue(object2.saveToDatabase())
     

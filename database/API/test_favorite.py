@@ -72,4 +72,18 @@ class TestFavorite(unittest.TestCase):
     
     self.assertTrue(object1.deleteFromDatabase())
 
+  def test_saveToDatabase(self):
+    object1 = Favorite()
+    self.assertTrue(object1.getBy('favorite_id', 1))
+    self.assertEqual(object1.getAlbumID(), 2)
+    self.assertTrue(object1.setAlbumID(48))
+    self.assertTrue(object1.saveToDatabase())
+    
+    object2 = Favorite()
+    self.assertTrue(object2.getBy('favorite_id', 1))
+    self.assertEqual(object2.getAlbumID(), 48)
+    self.assertTrue(object2.setAlbumID(2))
+    self.assertTrue(object2.saveToDatabase())
+       
+    
     

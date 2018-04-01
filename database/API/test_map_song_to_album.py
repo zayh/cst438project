@@ -32,7 +32,7 @@ class TestMapSongToAlbum(unittest.TestCase):
     self.assertTrue(object1.setTrackNumber(1))
     self.assertEqual(object1.getSongID(), 1)
     self.assertEqual(object1.getAlbumID(), 2)
-    self.assertEqual(object1.getTrackNumber(1))
+    self.assertEqual(object1.getTrackNumber(), 1)
     
   def test_getByMapSongToAlbumID(self):
     object = MapSongToAlbum()
@@ -76,4 +76,18 @@ class TestMapSongToAlbum(unittest.TestCase):
     
     self.assertTrue(object1.deleteFromDatabase())
 
+  def test_saveToDatabase(self):
+    object1 = MapSongToAlbum()
+    self.assertTrue(object1.getBy('map_song_to_album_id', 1))
+    self.assertEqual(object1.getAlbumID(), 2)
+    self.assertEqual(object1.getTrackNumber(), 1)
+    self.assertTrue(object1.setTrackNumber(4))
+    self.assertTrue(object1.saveToDatabase())
     
+    object2 = MapSongToAlbum()
+    self.assertTrue(object2.getBy('map_song_to_album_id', 1))
+    self.assertEqual(object2.getAlbumID(), 2)
+    self.assertEqual(object2.getTrackNumber(), 4)
+    self.assertTrue(object2.setTrackNumber(1))
+    self.assertTrue(object2.saveToDatabase())
+       
