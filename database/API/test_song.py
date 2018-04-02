@@ -3,6 +3,18 @@ from Song import Song
 
 class TestSong(unittest.TestCase):
 
+  data1 = {
+    'song_id' : '',
+    'song_name' : 'Enter Sandman',
+    'is_solo_release' : False,
+    'band_id' : 1,
+  }
+  
+  data2 = {
+    'song_name' : 'Sad But True',
+    'band_id' : 1
+  }
+
   def test_createEmptySong(self):
     object = Song()
     self.assertIsInstance(object, Song)
@@ -13,18 +25,16 @@ class TestSong(unittest.TestCase):
     
     
   def test_new(self):
-    object = Song()
-    object.new('Enter Sandman', False, 1)
+    object = Song(self.data1)
     self.assertEqual(object.getSongID(), '')
     self.assertEqual(object.getSongName(), 'Enter Sandman')
     self.assertEqual(object.getBandID(), 1)
     self.assertFalse(object.isSoloRelease())
     
   def test_toJSON(self):
-    object = Song()
-    object.new('Enter Sandman', False, 1)
+    object = Song(self.data1)
     self.assertEqual(object.toJSON(), 
-      "{ song_id: , song_name: 'Enter Sandman', is_solo_release: False, band_id: 1 }"
+      '{"song_id": "", "song_name": "Enter Sandman", "is_solo_release": false, "band_id": 1}'
     )
     
   def test_mutators_and_accessors(self):
@@ -49,8 +59,7 @@ class TestSong(unittest.TestCase):
     self.assertEqual(object.getSongID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Song()
-    self.assertTrue(object1.new('Enter Sandman', False, 1))
+    object1 = Song(self.data1)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getSongID(), '')
     song_id = object1.getSongID()
@@ -65,13 +74,11 @@ class TestSong(unittest.TestCase):
     self.assertEqual(object3.getSongID(), '')
     
   def test_duplicateSongs(self):
-    object1 = Song()
-    self.assertTrue(object1.new('Enter Sandman', False, 1))
+    object1 = Song(self.data1)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getSongID(), '')
 
-    object2 = Song()
-    self.assertTrue(object2.new('Enter Sandman', False, 1))
+    object2 = Song(self.data1)
     self.assertFalse(object2.addToDatabase())
     self.assertEqual(object2.getSongID(), '')
     
@@ -79,9 +86,10 @@ class TestSong(unittest.TestCase):
 
     
   def test_isSongNameAvailable(self):
-    object = Song()
-    self.assertFalse(object.isSongNameAvailable('Sad But True', 1))
-    self.assertTrue(object.isSongNameAvailable('Enter Sandman', 1))
+    object1 = Song(self.data2)
+    object2 = Song(self.data1)
+    self.assertFalse(object1.isSongNameAvailable())
+    self.assertTrue(object2.isSongNameAvailable())
 
   def test_saveToDatabase(self):
     object = Song()

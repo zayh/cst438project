@@ -3,6 +3,17 @@ from Wishlist import Wishlist
 
 class TestWishlist(unittest.TestCase):
 
+  data1 = {
+    'wishlist_id' : '',
+    'account_id': 1,
+    'album_id': 2,
+  }
+  
+  data2 = {
+    'account_id': 34,
+    'album_id' : 2
+  }
+
   def test_createEmptyWishlist(self):
     object = Wishlist()
     self.assertIsInstance(object, Wishlist)
@@ -11,17 +22,15 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object.getAlbumID(), '')
     
   def test_new(self):
-    object = Wishlist()
-    object.new(1, 2);
+    object = Wishlist(self.data1);
     self.assertEqual(object.getWishlistID(), '')
     self.assertEqual(object.getAccountID(), 1)
     self.assertEqual(object.getAlbumID(), 2)
     
   def test_toJSON(self):
-    object = Wishlist()
-    object.new(1, 2)
+    object = Wishlist(self.data1)
     self.assertEqual(object.toJSON(), 
-      "{ wishlist_id: , account_id: 1, album_id: 2 }" 
+      '{"wishlist_id": "", "account_id": 1, "album_id": 2}' 
     )
     
   def test_mutators_and_accessors(self):
@@ -45,8 +54,7 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object.getWishlistID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Wishlist()
-    self.assertTrue(object1.new(34, 2))
+    object1 = Wishlist(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getWishlistID(), '')
     wishlist_id = object1.getWishlistID()
@@ -61,13 +69,11 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object3.getWishlistID(), '')
     
   def test_duplicateWishlists(self):
-    object1 = Wishlist()
-    self.assertTrue(object1.new(34, 2))
+    object1 = Wishlist(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getWishlistID(), '')
 
-    object2 = Wishlist()
-    self.assertTrue(object1.new(34, 2))
+    object2 = Wishlist(self.data2)
     self.assertFalse(object2.addToDatabase())
     self.assertEqual(object2.getWishlistID(), '')
     
