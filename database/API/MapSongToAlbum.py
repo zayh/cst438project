@@ -1,60 +1,36 @@
-import mysql.connector
-import hashlib
+from settings import *
+import json
 
 class MapSongToAlbum:
   
-  def __init__(self):
+  def __init__(self, data=None):
     ''' Create an empty object '''
     ''' Test with test_createEmptyAccout '''
-    self.map_song_to_album_id = ''
-    self.song_id = ''
-    self.album_id = ''
-    self.track_number = ''
-    
-  def connectToDatabase(self):
-    ''' Connect to the Database '''
-    ''' Test with test_getBy '''
-    try:
-      cnx = mysql.connector.connect(
-        user='webapp', 
-        password='centralSolutions123',
-        host='18.222.66.236', 
-        database='musicproject'
-      )
-    except mysql.connector.Error as err:
-      cnx = False
-    
-    return cnx
-    
-  def new(self, song_id, album_id, track_number):
-    ''' Populate the current object '''
-    ''' Test with test_new '''
-    success = False
-  
-    self.song_id = song_id
-    self.album_id = album_id
-    self.track_number = track_number
-    success = True
-      
-    return success
-    
+    self.data = {}
+    if data is not None:
+      for key in data:
+        self.data[key] = data[key]
     
   def getBy(self, column, value):
     ''' Populate the object from the database, using map_song_to_album_id '''
     ''' Test by test_getBy* scripts '''
     success = False
+    noSqlErrors = True
     if column == 'map_song_to_album_id':
-      cnx = self.connectToDatabase()
+      cnx = connectToDatabase()
       if cnx != False:
         cursor = cnx.cursor(buffered=True)
         query = ("SELECT map_song_to_album_id,song_id,album_id,track_number from map_song_to_album where {} = %s".format(column))
-        cursor.execute(query, (value,))
-        if cursor.rowcount == 1:
+        try:
+          cursor.execute(query, (value,))
+        except mysql.connector.Error as err:
+          noSqlErrors = False
+        if noSqlErrors == True and cursor.rowcount == 1:
           row = cursor.fetchone()
-          self.map_song_to_album_id = row[0]
-          self.song_id = row[1]
-          self.album_id = row[2]
-          self.track_number = row[3]
+          self.setMapSongToAlbumID(row[0])
+          self.setSongID(row[1])
+          self.setAlbumID(row[2])
+          self.setTrackNumber(row[3])
           success = True
         cursor.close()
         cnx.close()
@@ -63,100 +39,119 @@ class MapSongToAlbum:
   def toJSON(self):
     ''' Returns a JSON string of the object. '''
     ''' Test with test_toJSON '''
-    jsonStr = "{{ map_song_to_album_id: {}, song_id: {}, album_id: {}, track_number: {} }}".format(self.map_song_to_album_id, 
-      self.song_id, self.album_id, self.track_number)
+    jsonStr = json.dumps(self.data)
     return jsonStr
+  
+  def fromJSON(self, jsonStr):
+    data = json.loads(jsonStr)
+    self.__init__(data)
   
   def addToDatabase(self):
     ''' Adds the current object to the database '''
     ''' Only works on new objects '''
     ''' Test with test_SaveAndDeleteToDatabase() '''
     success = False
-    noErrors = True
-    if self.getMapSongToAlbumID() == '' and self.notDuplicateMapSongToAlbum(self.song_id, self.album_id) == True:
-      cnx = self.connectToDatabase()
+    noSqlErrors = True
+    if self.getMapSongToAlbumID() == '' and self.notDuplicateMapSongToAlbum() == True:
+      cnx = connectToDatabase()
       if cnx != False:
         cursor = cnx.cursor()
         query = ("INSERT INTO map_song_to_album (song_id, album_id, track_number) "
-                 "VALUES (%s, %s, %s)")
-                 
+                 "VALUES (%s, %s, %s)")     
         try:
-          cursor.execute( query, (self.song_id, self.album_id, self.track_number) )
+          cursor.execute( query, (self.getSongID(), self.getAlbumID(), self.getTrackNumber()) )
         except mysql.connector.Error as err:
-          noErrors = False
-        
-        if noErrors == True:
-          query = ("SELECT map_song_to_album_id FROM map_song_to_album WHERE song_id = %s AND album_id = %s")
-          cursor.execute( query, (self.song_id, self.album_id))
-          self.setMapSongToAlbumID(cursor.fetchone()[0])
-          if self.getMapSongToAlbumID() != '':
-            cnx.commit()
-            success = True
-
+          noSqlErrors = False
+        if noSqlErrors == True:
+          query = ("SELECT map_song_to_album_id FROM map_song_to_album "
+            "WHERE song_id = %s AND album_id = %s")
+          try: 
+            cursor.execute( query, (self.getSongID(), self.getAlbumID()))
+          except mysql.connector.Error as err:
+            noSqlErrors = False
+          if noSqlErrors == True:
+            self.setMapSongToAlbumID(cursor.fetchone()[0])
+            if self.getMapSongToAlbumID() != '':
+              cnx.commit()
+              success = True
         cursor.close()
         cnx.close()
-
     return success
 
   # Accessors  
   def getMapSongToAlbumID(self):
-    return self.map_song_to_album_id
+    returnVal = ''
+    if 'map_song_to_album_id' in self.data:
+      returnVal = self.data['map_song_to_album_id']
+    return returnVal
     
   def getSongID(self):
-    return self.song_id
+    returnVal = ''
+    if 'song_id' in self.data:
+      returnVal = self.data['song_id']
+    return returnVal
     
   def getAlbumID(self):
-    return self.album_id
+    returnVal = ''
+    if 'album_id' in self.data:
+      returnVal = self.data['album_id']    
+    return returnVal
     
   def getTrackNumber(self):
-    return self.track_number
+    returnVal = ''
+    if 'track_number' in self.data:
+      returnVal = self.data['track_number']
+    return returnVal
 
   # Mutators
   # Test with test_Mutators()
   def setMapSongToAlbumID(self, map_song_to_album_id):
     success = False
     if (1):
-      self.map_song_to_album_id = map_song_to_album_id
+      self.data['map_song_to_album_id'] = map_song_to_album_id
       success = True
     return success
   
   def setSongID(self, song_id):
     success = False
     if (1):
-      self.song_id = song_id
+      self.data['song_id'] = song_id
       success = True
     return success
     
   def setAlbumID(self, album_id):
     success = False
     if (1):
-      self.album_id = album_id
+      self.data['album_id'] = album_id
       success = True
     return success
     
   def setTrackNumber(self, track_number):
     success = False
     if (1):
-      self.track_number = track_number
+      self.data['track_number'] = track_number
       success = True
     return True
     
   ####
 
-  def notDuplicateMapSongToAlbum(self, song_id, album_id):
+  def notDuplicateMapSongToAlbum(self):
     ''' Checks to see if the user has commented already '''
     ''' Test with test_notDuplicateComment '''
     notDuplicate = False
-    cnx = self.connectToDatabase()
-    if cnx != False:
+    noSqlErrors = True
+    cnx = connectToDatabase()
+    if cnx != False and self.getSongID() != '' and self.getAlbumID != '':
       cursor = cnx.cursor(buffered=True)
       query = ("SELECT * FROM map_song_to_album WHERE song_id = %s AND album_id = %s")
-      cursor.execute(query, (song_id,album_id))
-      if cursor.rowcount < 1:
+      try:
+        cursor.execute(query, (self.getSongID(), self.getAlbumID()))
+      except mysql.connector.Error as err:
+        noSqlErrors = False
+      if noSqlErrors == True and cursor.rowcount == 0:
         notDuplicate = True
       cursor.close()
       cnx.close()
-
     return notDuplicate
     
     
@@ -164,24 +159,29 @@ class MapSongToAlbum:
     ''' Deletes the object from the database '''
     ''' Test with test_SaveAndDeleteFromDatabase '''
     success = False
+    noSqlErrors = True
     if self.getMapSongToAlbumID() != '':
-      cnx = self.connectToDatabase()
+      cnx = connectToDatabase()
       if cnx != False:
         cursor = cnx.cursor()
         query = ("DELETE FROM map_song_to_album WHERE map_song_to_album_id = %s")
-        cursor.execute(query, (self.getMapSongToAlbumID(),))
-        cnx.commit()
+        try:
+          cursor.execute(query, (self.getMapSongToAlbumID(),))
+        except mysql.connector.Error as err:
+          noSqlErrors = False
+        if noSqlErrors == True:
+          cnx.commit()
+          success = True
         cursor.close()
         cnx.close()
-        success = True
     return success
   
   def saveToDatabase(self):
     ''' Saves current object to the database, using the primary index '''
     success = False
-    NoSqlErrors = True
+    noSqlErrors = True
     if self.getMapSongToAlbumID() != '':
-      cnx = self.connectToDatabase()
+      cnx = connectToDatabase()
       if cnx != False:
         cursor = cnx.cursor()
         query = ("UPDATE map_song_to_album SET song_id = %s, album_id = %s , track_number = %s "
@@ -191,8 +191,8 @@ class MapSongToAlbum:
             (self.getSongID(), self.getAlbumID(), self.getTrackNumber(), self.getMapSongToAlbumID()) 
           )
         except mysql.connector.Error as err:
-          NoSqlErrors = False
-        if NoSqlErrors == True:
+          noSqlErrors = False
+        if noSqlErrors == True:
           cnx.commit()
           self.getBy('map_song_to_album_id', self.getMapSongToAlbumID())
           success = True

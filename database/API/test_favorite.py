@@ -3,6 +3,18 @@ from Favorite import Favorite
 
 class TestFavorite(unittest.TestCase):
 
+  data1 = {
+    'favorite_id' : '',
+    'account_id' : 3,
+    'album_id' : 2,
+  }
+  
+  data2 = {
+    'favorite_id' : '',
+    'account_id' : 34,
+    'album_id' : 2,
+  }
+
   def test_createEmptyFavorite(self):
     object = Favorite()
     self.assertIsInstance(object, Favorite)
@@ -11,17 +23,15 @@ class TestFavorite(unittest.TestCase):
     self.assertEqual(object.getAlbumID(), '')
     
   def test_new(self):
-    object = Favorite()
-    object.new(3, 2);
+    object = Favorite(self.data1);
     self.assertEqual(object.getFavoriteID(), '')
     self.assertEqual(object.getAccountID(), 3)
     self.assertEqual(object.getAlbumID(), 2)
     
   def test_toJSON(self):
-    object = Favorite()
-    object.new(3, 2)
+    object = Favorite(self.data1)
     self.assertEqual(object.toJSON(), 
-      "{ favorite_id: , account_id: 3, album_id: 2 }" 
+      '{"favorite_id": "", "account_id": 3, "album_id": 2}' 
     )
     
   def test_mutators_and_accessors(self):
@@ -44,8 +54,7 @@ class TestFavorite(unittest.TestCase):
     self.assertEqual(object.getFavoriteID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Favorite()
-    self.assertTrue(object1.new(34, 2))
+    object1 = Favorite(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getFavoriteID(), '')
     favorite_id = object1.getFavoriteID()
@@ -60,13 +69,11 @@ class TestFavorite(unittest.TestCase):
     self.assertEqual(object3.getFavoriteID(), '')
     
   def test_duplicateFavorites(self):
-    object1 = Favorite()
-    self.assertTrue(object1.new(34, 2))
+    object1 = Favorite(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getFavoriteID(), '')
 
-    object2 = Favorite()
-    self.assertTrue(object1.new(34, 2))
+    object2 = Favorite(self.data2)
     self.assertFalse(object2.addToDatabase())
     self.assertEqual(object2.getFavoriteID(), '')
     

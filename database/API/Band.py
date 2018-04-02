@@ -1,131 +1,147 @@
-import mysql.connector
-import hashlib
+from settings import *
+import json
 
 class Band:
   
-  def __init__(self):
-    ''' Create an empty object '''
-    ''' Test with test_createEmptyAccout '''
-    self.band_id = ''
-    self.band_name = ''
-    self.is_solo_artist = False
-    
-  def connectToDatabase(self):
-    ''' Connect to the Database '''
-    ''' Test with test_getBy '''
-    try:
-      cnx = mysql.connector.connect(
-        user='webapp', 
-        password='centralSolutions123',
-        host='18.222.66.236', 
-        database='musicproject'
-      )
-    except mysql.connector.Error as err:
-      print ("Something went wrong: {}".format(err))
-      cnx = False
-    
-    return cnx
-    
-  def new(self, band_name):
-    ''' Populate the current object '''
-    ''' Test with test_new '''
-    if self.isBandNameAvailable(band_name):
-      self.band_name = band_name
-    
+  def __init__(self, data=None):
+    ''' Create an object '''
+    ''' Test with test_createAccout '''
+    self.data = { }
+    if data is not None:
+      for key in data:
+        self.data[key] = data[key]
+
   def getBy(self, column, value):
     ''' Populate the object from the database, using either band_id or band_name '''
     ''' Test by test_getBy* scripts '''
     success = False
+    NoSqlErrors = True
     if column == 'band_name' or column == 'band_id':
-      cnx = self.connectToDatabase()
-      if cnx == False:
-        success = False
-      else:
-        cursor = cnx.cursor(buffered=True)
+      cnx = connectToDatabase()
+      if cnx != False:
         query = ("SELECT * from band where {} = %s".format(column))
-        cursor.execute(query, (value,))
-        if cursor.rowcount == 1:
-          row = cursor.fetchone()
-          self.band_id = row[0]
-          self.band_name = row[2]
-          if row[1] == 0:
-            self.setSoloArtist(False)
-          else:
-            self.setSoloArtist(True)
-          success = True
+        cursor = cnx.cursor(buffered=True)
+        try:
+          cursor.execute(query, (value,))
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          if cursor.rowcount == 1:
+            row = cursor.fetchone()
+            self.setBandID(row[0])
+            self.setSoloArtist(row[1])
+            self.setBandName(row[2])
+            success = True
         cursor.close()
         cnx.close()
-    else:
-      success = False
     return success
   
   def toJSON(self):
     ''' Returns a JSON string of the object. '''
     ''' Test with test_toJSON '''
-    jsonStr = "{{ band_id: {}, band_name: '{}', is_solo_artist: '{}' }}".format(self.band_id, 
-      self.band_name, self.is_solo_artist)
+    jsonStr = json.dumps(self.data)
     return jsonStr
+    
+  def fromJSON(self, jsonStr):
+    ''' Takes a jsonStr and converts it into an object '''
+    success = False
+    data = json.loads(jsonStr)
+    self.__init__(data)
+    success = True
+    return success
   
   def addToDatabase(self):
     ''' Adds the current object to the database '''
     ''' Only works on new objects '''
     ''' Test with test_SaveAndDeleteToDatabase() '''
     success = False
-    if self.getBandID() == '':
-      cnx = self.connectToDatabase()
+    NoSqlErrors = True
+    if self.getBandID() == '' and self.isBandNameAvailable() == True:
+      cnx = connectToDatabase()
       if cnx != False:
-        if self.isSoloArtist() == True:
-          soloArtist = 1
-        else:
-          soloArtist = 0
         cursor = cnx.cursor()
         query = ("INSERT INTO band (band_name, is_solo_artist) VALUES (%s, %s)")
-        cursor.execute( query, (self.band_name, soloArtist) )
-        cnx.commit()
+        try:
+          cursor.execute( query, (self.getBandName(), self.isSoloArtist('int')) )
+        except mysql.connector.Error as err:
+          NoSqlErrors = False
+        if NoSqlErrors == True:
+          cnx.commit()
+          success = True
         cursor.close()
         cnx.close()
-    else:
-      success = False
     return success
 
   # Accessors  
   def getBandID(self):
-    return self.band_id
+    returnVal = ''
+    if 'band_id' in self.data:
+      returnVal = self.data['band_id']
+    return returnVal
     
   def getBandName(self):
-    return self.band_name
+    returnVal = ''
+    if 'band_name' in self.data:
+      returnVal = self.data['band_name']
+    return returnVal
     
-  def isSoloArtist(self):
-    return self.is_solo_artist
+  def isSoloArtist(self, outputFormat='bool'):
+    returnVal = ''
+    if 'is_solo_artist' in self.data:
+      returnVal = self.data['is_solo_artist']
+    if outputFormat == 'int':
+      if returnVal == True:
+        returnVal = 1
+      else:
+        returnVal = 0
+    return returnVal
 
   # Mutators
   # Test with test_Mutators()
+  def setBandID(self, band_id):
+    success = False
+    if (1):
+      self.data['band_id'] = band_id
+      success = True
+    return success
+  
   def setBandName(self, bandname):
-    if self.isBandNameAvailable(bandname):
-      self.band_name = bandname
-      return True
-    else:
-      return False
+    success = False
+    if (1):
+      self.data['band_name'] = bandname
+      success =  True
+    return success
       
   def setSoloArtist(self, boolean):
     success = False;
-    if (1):
-      self.is_solo_artist = boolean
+    if type(boolean) == type(int):
+      if boolean == 1:
+        self.data['is_solo_artist'] = True;
+        success = True
+      elif boolean == 0:
+        self.data['is_solo_artist'] = False;
+        sucess = True
+    elif type(boolean) == type(True):  
+      self.data['is_solo_artist'] = boolean
       success = True
     return success
   
   ####
 
-  def isBandNameAvailable(self, bandname):
+  def isBandNameAvailable(self):
     ''' Checks to see if the given bandname is already in use '''
     ''' Test with test_isBandNameAvailable '''
     available = False
-    cnx = self.connectToDatabase()
+    noSqlErrors = True
+    cnx = connectToDatabase()
     if cnx != False:
       cursor = cnx.cursor(buffered=True)
       query = ("SELECT * FROM band WHERE band_name = %s")
-      cursor.execute(query, (bandname,))
-      if cursor.rowcount < 1:
+      try:
+        cursor.execute(query, (self.getBandName(),))
+      except mysql.connector.Error as err:
+        noSqlErrors = False
+      if noSqlErrors == True and cursor.rowcount == 0:
         available = True
       cursor.close()
       cnx.close()
@@ -135,44 +151,44 @@ class Band:
     ''' Deletes the object from the database '''
     ''' Test with test_SaveAndDeleteFromDatabase '''
     success = False
+    noSqlErrors = True
     if self.getBandID() != '':
-      cnx = self.connectToDatabase()
+      cnx = connectToDatabase()
       if cnx != False:
         cursor = cnx.cursor()
         query = ("DELETE FROM band WHERE band_id = %s")
-        cursor.execute(query, (self.getBandID(),))
-        cnx.commit()
+        try:
+          cursor.execute(query, (self.getBandID(),))
+        except mysql.connector.Error as err:
+          noSqlErrors = False
+        if noSqlErrors == True:
+          cnx.commit()
+          success = True
         cursor.close()
         cnx.close()
-        success = True
     return success
   
   def saveToDatabase(self):
     ''' Saves current object to the database, using the primary index '''
     success = False
-    NoSqlErrors = True
+    noSqlErrors = True
     if self.getBandID() != '':
-      cnx = self.connectToDatabase()
+      cnx = connectToDatabase()
       if cnx != False:
-        if self.isSoloArtist() == True:
-          soloArtist = 1
-        else:
-          soloArtist = 0
         cursor = cnx.cursor()
         query = ("UPDATE band SET band_name = %s, is_solo_artist = %s "
           "WHERE band_id = %s")
         try:
           cursor.execute(query, 
-            (self.getBandName(), 
-            soloArtist,
-            self.getBandID()) 
+            (self.getBandName(), self.isSoloArtist('int'), self.getBandID()) 
           )
         except mysql.connector.Error as err:
-          NoSqlErrors = False
-        if NoSqlErrors == True:
+          noSqlErrors = False
+        if noSqlErrors == True:
           cnx.commit()
           self.getBy('band_id', self.getBandID())
           success = True
         cursor.close()
         cnx.close()
     return success
+    

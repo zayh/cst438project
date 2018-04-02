@@ -3,6 +3,31 @@ from Rating import Rating
 
 class TestRating(unittest.TestCase):
 
+  data1 = {
+    'rating_id': '',
+    'account_id': 3,
+    'album_id': 2,
+    'rating': 4,
+    'date': '2018-03-02',
+    'rating_id': '',
+    'comment': 'I don\'t actually own this album',
+  }
+
+  data2 = {
+    'account_id': 34, 
+    'album_id': 2, 
+    'rating': 4, 
+    'comment': "I don't actually own this album", 
+    'date': '2018-03-02'
+  }
+  
+  data3 = {
+    'account_id': 34, 
+    'album_id': 2, 
+    'rating': 1, 
+    'comment': "I hate this album", 
+    'date': '2017-03-02'
+  }
   def test_createEmptyRating(self):
     object = Rating()
     self.assertIsInstance(object, Rating)
@@ -15,8 +40,7 @@ class TestRating(unittest.TestCase):
     
     
   def test_new(self):
-    object = Rating()
-    object.new(3, 2, 4, "I don't actually own this album", '2018-03-02')
+    object = Rating(self.data1)
     self.assertEqual(object.getRatingID(), '')
     self.assertEqual(object.getDate(), '2018-03-02')
     self.assertEqual(object.getAccountID(), 3)
@@ -25,12 +49,10 @@ class TestRating(unittest.TestCase):
     self.assertEqual(object.getComment(), "I don't actually own this album")
     
   def test_toJSON(self):
-    object = Rating()
-    object.new(3, 2, 4, "I don't actually own this album", '2018-03-02')
+    object = Rating(self.data1)
     self.assertEqual(object.toJSON(), 
-      "{ rating_id: , account_id: 3, album_id: 2, rating: 4, comment: 'I don\'t actually own this album', "
-      "date: '2018-03-02' }" 
-    )
+      '{"rating_id": "", "account_id": 3, "album_id": 2, "rating": 4, '
+      '"date": "2018-03-02", "comment": "I don\'t actually own this album"}') 
     
   def test_mutators_and_accessors(self):
     object1 = Rating()
@@ -50,7 +72,7 @@ class TestRating(unittest.TestCase):
     object = Rating()
     self.assertTrue(object.getBy('rating_id', 4))
     self.assertNotEqual(object.getRatingID(), '')
-#    self.assertEqual(object.getDate(), '2018-03-31')
+   # self.assertEqual(object.getDate(), 'datetime.date(2018, 3, 31)' )
     
   def test_getByError(self):
     object = Rating()
@@ -58,8 +80,7 @@ class TestRating(unittest.TestCase):
     self.assertEqual(object.getRatingID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Rating()
-    self.assertTrue(object1.new(34, 2, 4, "I don't actually own this album", '2018-03-02'))
+    object1 = Rating(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getRatingID(), '')
     rating_id = object1.getRatingID()
@@ -74,13 +95,11 @@ class TestRating(unittest.TestCase):
     self.assertEqual(object3.getRatingID(), '')
     
   def test_duplicateRatings(self):
-    object1 = Rating()
-    self.assertTrue(object1.new(34, 2, 4, "I don't actually own this album", '2018-03-02'))
+    object1 = Rating(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getRatingID(), '')
 
-    object2 = Rating()
-    self.assertTrue(object1.new(34, 2, 1, "I hate this album", '2017-03-02'))
+    object2 = Rating(self.data3)
     self.assertFalse(object2.addToDatabase())
     self.assertEqual(object2.getRatingID(), '')
     
