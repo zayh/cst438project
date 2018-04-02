@@ -18,20 +18,20 @@ class TestAccount(unittest.TestCase):
   def test_createEmptyAccout(self):
     object = Account()
     self.assertIsInstance(object, Account)
-    self.assertEqual(object.getAccountID(), '')
-    self.assertEqual(object.getUsername(), '')
-    self.assertEqual(object.getFirstname(), '')
-    self.assertEqual(object.getLastname(), '')
-    self.assertEqual(object.getLyric(), '')
-    self.assertEqual(object.getPassword(), '')
+    self.assertEqual(object.getItem('account_id'), '')
+    self.assertEqual(object.getItem('username'), '')
+    self.assertEqual(object.getItem('firstname'), '')
+    self.assertEqual(object.getItem('lastname'), '')
+    self.assertEqual(object.getItem('lyric'), '')
+    self.assertEqual(object.getItem('password'), '')
     
   def test_populatedAccount(self):
     object = Account(self.data1)
-    self.assertEqual(object.getAccountID(), '')
-    self.assertEqual(object.getUsername(), 'bobdylan')
-    self.assertEqual(object.getFirstname(), 'Bob')
-    self.assertEqual(object.getLastname(), 'Dylan')
-    self.assertEqual(object.getLyric(), 'kiss this guy')
+    self.assertEqual(object.getItem('account_id'), '')
+    self.assertEqual(object.getItem('username'), 'bobdylan')
+    self.assertEqual(object.getItem('firstname'), 'Bob')
+    self.assertEqual(object.getItem('lastname'), 'Dylan')
+    self.assertEqual(object.getItem('lyric'), 'kiss this guy')
     
   def testSetPassword(self):
     object = Account(self.data1)
@@ -39,72 +39,71 @@ class TestAccount(unittest.TestCase):
     self.assertTrue(object.checkPassword('wh4tD1D#eS47?'))
     self.assertFalse(object.checkPassword('wh4tD1D#eS47'))
     
-  def test_toJSON(self):
-    object = Account(self.data1)
-    self.assertTrue(object.addPassword('wh4tD1D#eS47?'))
-    self.assertEqual(object.toJSON(), '{"account_id": "", "username": "bobdylan", "firstname": "Bob", "lastname": "Dylan", "lyric": "kiss this guy", "password": "b3e79af50eedc2409663b385c4f194a23699834e4363508953996e195715dd2c"}')
+  def test_JSON(self):
+    object1 = Account(self.data1)
+    jsonStr = object1.toJSON()
+    
+    object2 = Account()
+    self.assertEqual(object2.getItem('username'), '')
+    self.assertEqual(object2.getItem('firstname'), '')
+    self.assertEqual(object2.getItem('lastname'), '')
+    self.assertEqual(object2.getItem('lyric'), '')
+    object2.fromJSON(jsonStr)
+    self.assertEqual(object2.getItem('username'), 'bobdylan')
+    self.assertEqual(object2.getItem('firstname'), 'Bob')
+    self.assertEqual(object2.getItem('lastname'), 'Dylan')
+    self.assertEqual(object2.getItem('lyric'), 'kiss this guy')   
     
   def test_mutators(self):
     object = Account()
-    object.setUsername('mcarrey')
-    object.setFirstname('Mariah')
-    object.setLastname('Carrey')
-    object.setLyric("what's my line?")
+    object.setItem('username','mcarrey')
+    object.setItem('firstname','Mariah')
+    object.setItem('lastname','Carrey')
+    object.setItem('lyric',"what's my line?")
     object.addPassword("$$doGC4#,")
     
-    self.assertEqual(object.getUsername(), 'mcarrey')
-    self.assertEqual(object.getFirstname(), 'Mariah')
-    self.assertEqual(object.getLastname(), 'Carrey')
-    self.assertEqual(object.getLyric(), "what's my line?")
-    self.assertEqual(object.getPassword(), '1b4257b066734e33fb4bff2290025237ee187a52b4e335970a2a13054259946b')
+    self.assertEqual(object.getItem('username'), 'mcarrey')
+    self.assertEqual(object.getItem('firstname'), 'Mariah')
+    self.assertEqual(object.getItem('lastname'), 'Carrey')
+    self.assertEqual(object.getItem('lyric'), "what's my line?")
+    self.assertEqual(object.getItem('password'), '1b4257b066734e33fb4bff2290025237ee187a52b4e335970a2a13054259946b')
     
-  def test_getByUsername(self):
+  def test_getRow(self):
     object = Account()
-    self.assertTrue(object.getBy('username','jay'))
-    self.assertNotEqual(object.getAccountID(), '')
-    self.assertEqual(object.getAccountID(), 3)
-    
-  def test_getByAccountID(self):
-    object = Account()
-    self.assertTrue(object.getBy('account_id', 3))
-    self.assertNotEqual(object.getAccountID(), '')
-    self.assertEqual(object.getUsername(), 'jay')
-    
-  def test_getByError(self):
-    object = Account()
-    self.assertFalse(object.getBy('firstname', 'Jason'))
-    self.assertEqual(object.getAccountID(), '')
+    self.assertTrue(object.getRow(3))
+    self.assertNotEqual(object.getItem('account_id'), '')
+    self.assertEqual(object.getItem('username'), 'jay')
     
   def test_SaveAndDeleteFromDatabase(self):
     object1 = Account(self.data1)
-    self.assertFalse(object1.addToDatabase())
     self.assertTrue(object1.addPassword('wh4tD1D#eS47'))
     self.assertTrue(object1.addToDatabase())
+    account_id = object1.getItem('account_id')
 
     object2 = Account()
-    self.assertTrue(object2.getBy('username', 'bobdylan'))
-    self.assertNotEqual(object2.getAccountID, '')
+    self.assertTrue(object2.getRow(account_id))
+    self.assertEqual(object2.getItem('username'), 'bobdylan')
     self.assertTrue(object2.deleteFromDatabase())
 
     object3 = Account()
-    self.assertFalse(object3.getBy('username', 'bobdylan'))
-    self.assertEqual(object3.getAccountID(), '')
+    self.assertFalse(object3.getRow(account_id))
+    self.assertEqual(object3.getItem('account_id'), '')
     
   def test_isUsernameAvailable(self):
     object1 = Account(self.data1)
     object2 = Account(self.data2)
-    self.assertTrue(object1.isUsernameAvailable())
-    self.assertFalse(object2.isUsernameAvailable())
+    self.assertTrue(object1.notDuplicate())
+    self.assertFalse(object2.notDuplicate())
     
   def test_saveToDatabase(self):
     object = Account()
-    self.assertTrue(object.getBy('account_id', 3))
-    self.assertEqual(object.getLyric(), 'pour some sugar on me')
-    self.assertTrue(object.setLyric('we are the champions'))
+    self.assertTrue(object.getRow(3))
+    self.assertEqual(object.getItem('lyric'), 'pour some sugar on me')
+    self.assertTrue(object.setItem('lyric','we are the champions'))
     self.assertTrue(object.saveToDatabase())
-    self.assertEqual(object.getLyric(), 'we are the champions')
-    self.assertTrue(object.setLyric('pour some sugar on me'))
+    self.assertEqual(object.getItem('lyric'), 'we are the champions')
+    self.assertTrue(object.setItem('lyric','pour some sugar on me'))
     self.assertTrue(object.saveToDatabase())
-    self.assertEqual(object.getLyric(), 'pour some sugar on me')
+    self.assertEqual(object.getItem('lyric'), 'pour some sugar on me')
 
     

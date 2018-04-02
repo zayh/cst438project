@@ -1,5 +1,5 @@
 import unittest
-from Rating import Rating
+from Rating2 import Rating
 
 class TestRating(unittest.TestCase):
 
@@ -31,90 +31,93 @@ class TestRating(unittest.TestCase):
   def test_createEmptyRating(self):
     object = Rating()
     self.assertIsInstance(object, Rating)
-    self.assertEqual(object.getRatingID(), '')
-    self.assertEqual(object.getAccountID(), '')
-    self.assertEqual(object.getAlbumID(), '')
-    self.assertEqual(object.getRating(), '')
-    self.assertEqual(object.getComment(), '')
-    self.assertEqual(object.getDate(), '')
+    self.assertEqual(object.getItem('rating_id'), '')
+    self.assertEqual(object.getItem('account_id'), '')
+    self.assertEqual(object.getItem('album_id'), '')
+    self.assertEqual(object.getItem('rating'), '')
+    self.assertEqual(object.getItem('comment'), '')
+    self.assertEqual(object.getItem('date'), '')
     
     
   def test_new(self):
     object = Rating(self.data1)
-    self.assertEqual(object.getRatingID(), '')
-    self.assertEqual(object.getDate(), '2018-03-02')
-    self.assertEqual(object.getAccountID(), 3)
-    self.assertEqual(object.getAlbumID(), 2)
-    self.assertEqual(object.getRating(), 4)
-    self.assertEqual(object.getComment(), "I don't actually own this album")
+    self.assertEqual(object.getItem('rating_id'), '')
+    self.assertEqual(object.getItem('date'), '2018-03-02')
+    self.assertEqual(object.getItem('account_id'), 3)
+    self.assertEqual(object.getItem('album_id'), 2)
+    self.assertEqual(object.getItem('rating'), 4)
+    self.assertEqual(object.getItem('comment'), "I don't actually own this album")
     
-  def test_toJSON(self):
-    object = Rating(self.data1)
-    self.assertEqual(object.toJSON(), 
-      '{"rating_id": "", "account_id": 3, "album_id": 2, "rating": 4, '
-      '"date": "2018-03-02", "comment": "I don\'t actually own this album"}') 
+  def test_JSON(self):
+    object1 = Rating(self.data1)
+    jsonStr = object1.toJSON()
+    
+    object2 = Rating()
+    self.assertEqual(object2.getItem('account_id'), '')
+    self.assertEqual(object2.getItem('album_id'), '')
+    self.assertEqual(object2.getItem('rating'), '')
+    object2.fromJSON(jsonStr)
+    self.assertEqual(object2.getItem('account_id'), 3)
+    self.assertEqual(object2.getItem('album_id'), 2)
+    self.assertEqual(object2.getItem('rating'), 4)    
+    
     
   def test_mutators_and_accessors(self):
     object1 = Rating()
-    self.assertTrue(object1.setComment("I don't actually own this album"))
-    self.assertTrue(object1.setDate('2018-03-02'))
-    self.assertTrue(object1.setAccountID(3))
-    self.assertTrue(object1.setAlbumID(2))
-    self.assertTrue(object1.setRating(4))
+    self.assertTrue(object1.setItem('comment',"I don't actually own this album"))
+    self.assertTrue(object1.setItem('date','2018-03-02'))
+    self.assertTrue(object1.setItem('account_id',3))
+    self.assertTrue(object1.setItem('album_id',2))
+    self.assertTrue(object1.setItem('rating',4))
     
-    self.assertEqual(object1.getComment(), "I don't actually own this album")
-    self.assertEqual(object1.getDate(), '2018-03-02')
-    self.assertEqual(object1.getAccountID(), 3)
-    self.assertEqual(object1.getAlbumID(), 2)
-    self.assertEqual(object1.getRating(), 4)
+    self.assertEqual(object1.getItem('comment'), "I don't actually own this album")
+    self.assertEqual(object1.getItem('date'), '2018-03-02')
+    self.assertEqual(object1.getItem('account_id'), 3)
+    self.assertEqual(object1.getItem('album_id'), 2)
+    self.assertEqual(object1.getItem('rating'), 4)
     
   def test_getByRatingID(self):
     object = Rating()
-    self.assertTrue(object.getBy('rating_id', 4))
-    self.assertNotEqual(object.getRatingID(), '')
-   # self.assertEqual(object.getDate(), 'datetime.date(2018, 3, 31)' )
-    
-  def test_getByError(self):
-    object = Rating()
-    self.assertFalse(object.getBy('account_id', '2'))
-    self.assertEqual(object.getRatingID(), '')
+    self.assertTrue(object.getRow(4))
+    self.assertNotEqual(object.getItem('rating_id'), '')
+    #self.assertEqual(object.getItem('date'), '2018-3-31' )
     
   def test_SaveAndDeleteFromDatabase(self):
     object1 = Rating(self.data2)
     self.assertTrue(object1.addToDatabase())
-    self.assertNotEqual(object1.getRatingID(), '')
-    rating_id = object1.getRatingID()
+    self.assertNotEqual(object1.getItem('rating_id'), '')
+    rating_id = object1.getItem('rating_id')
 
     object2 = Rating()
-    self.assertTrue(object2.getBy('rating_id', rating_id))
-    self.assertNotEqual(object2.getRatingID(), '')
+    self.assertTrue(object2.getRow(rating_id))
+    self.assertNotEqual(object2.getItem('rating_id'), '')
     self.assertTrue(object2.deleteFromDatabase())
 
     object3 = Rating()
-    self.assertFalse(object3.getBy('rating_id', rating_id))
-    self.assertEqual(object3.getRatingID(), '')
+    self.assertFalse(object3.getRow(rating_id))
+    self.assertEqual(object3.getItem('rating_id'), '')
     
   def test_duplicateRatings(self):
     object1 = Rating(self.data2)
     self.assertTrue(object1.addToDatabase())
-    self.assertNotEqual(object1.getRatingID(), '')
+    self.assertNotEqual(object1.getItem('rating_id'), '')
 
     object2 = Rating(self.data3)
     self.assertFalse(object2.addToDatabase())
-    self.assertEqual(object2.getRatingID(), '')
+    self.assertEqual(object2.getItem('rating_id'), '')
     
     self.assertTrue(object1.deleteFromDatabase())
 
   def test_saveToDatabase(self):
     object1 = Rating()
-    self.assertTrue(object1.getBy('rating_id', 4))
-    self.assertEqual(object1.getRating(), 5)
-    self.assertTrue(object1.setRating(1))
+    self.assertTrue(object1.getRow(4))
+    self.assertEqual(object1.getItem('rating'), 5)
+    self.assertTrue(object1.setItem('rating',1))
     self.assertTrue(object1.saveToDatabase())
     
     object2 = Rating()
-    self.assertTrue(object2.getBy('rating_id', 4))
-    self.assertEqual(object2.getRating(), 1)
-    self.assertTrue(object2.setRating(5))
+    self.assertTrue(object2.getRow(4))
+    self.assertEqual(object2.getItem('rating'), 1)
+    self.assertTrue(object2.setItem('rating',5))
     self.assertTrue(object2.saveToDatabase())
     

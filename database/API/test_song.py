@@ -6,7 +6,7 @@ class TestSong(unittest.TestCase):
   data1 = {
     'song_id' : '',
     'song_name' : 'Enter Sandman',
-    'is_solo_release' : False,
+    'is_solo_release' : 0,
     'band_id' : 1,
   }
   
@@ -18,87 +18,88 @@ class TestSong(unittest.TestCase):
   def test_createEmptySong(self):
     object = Song()
     self.assertIsInstance(object, Song)
-    self.assertEqual(object.getSongID(), '')
-    self.assertEqual(object.getSongName(), '')
-    self.assertEqual(object.getBandID(), '')
-    self.assertFalse(object.isSoloRelease())
+    self.assertEqual(object.getItem('song_id'), '')
+    self.assertEqual(object.getItem('song_name'), '')
+    self.assertEqual(object.getItem('band_id'), '')
+    self.assertFalse(object.getItem('is_solo_release'))
     
     
   def test_new(self):
     object = Song(self.data1)
-    self.assertEqual(object.getSongID(), '')
-    self.assertEqual(object.getSongName(), 'Enter Sandman')
-    self.assertEqual(object.getBandID(), 1)
-    self.assertFalse(object.isSoloRelease())
+    self.assertEqual(object.getItem('song_id'), '')
+    self.assertEqual(object.getItem('song_name'), 'Enter Sandman')
+    self.assertEqual(object.getItem('band_id'), 1)
+    self.assertFalse(object.getItem('is_solo_release'))
     
-  def test_toJSON(self):
-    object = Song(self.data1)
-    self.assertEqual(object.toJSON(), 
-      '{"song_id": "", "song_name": "Enter Sandman", "is_solo_release": false, "band_id": 1}'
-    )
+  def test_JSON(self):
+    object1 = Song(self.data1)
+    jsonStr = object1.toJSON()
+    
+    object2 = Song()
+    self.assertEqual(object2.getItem('song_name'), '')
+    self.assertEqual(object2.getItem('band_id'), '')
+    object2.fromJSON(jsonStr)
+    self.assertEqual(object2.getItem('song_name'), 'Enter Sandman')
+    self.assertEqual(object2.getItem('band_id'), 1)    
+    
     
   def test_mutators_and_accessors(self):
     object1 = Song()
-    self.assertTrue(object1.setSongName('Enter Sandman'))
-    self.assertTrue(object1.setBandID(1))
-    self.assertTrue(object1.setSoloRelease(True))
+    self.assertTrue(object1.setItem('song_name', 'Enter Sandman'))
+    self.assertTrue(object1.setItem('band_id', 1))
+    self.assertTrue(object1.setItem('is_solo_release', 1))
     
-    self.assertEqual(object1.getSongName(), 'Enter Sandman')
-    self.assertEqual(object1.getBandID(), 1)
-    self.assertTrue(object1.isSoloRelease())
+    self.assertEqual(object1.getItem('song_name'), 'Enter Sandman')
+    self.assertEqual(object1.getItem('band_id'), 1)
+    self.assertTrue(object1.getItem('is_solo_release'))
     
-  def test_getBySongID(self):
+  def test_getRow(self):
     object = Song()
-    self.assertTrue(object.getBy('song_id', 1))
-    self.assertNotEqual(object.getSongID(), '')
-    self.assertEqual(object.getSongName(), 'Sad But True')
-    
-  def test_getByError(self):
-    object = Song()
-    self.assertFalse(object.getBy('band_id', 1))
-    self.assertEqual(object.getSongID(), '')
+    self.assertTrue(object.getRow(1))
+    self.assertNotEqual(object.getItem('song_id'), '')
+    self.assertEqual(object.getItem('song_name'), 'Sad But True')
     
   def test_SaveAndDeleteFromDatabase(self):
     object1 = Song(self.data1)
     self.assertTrue(object1.addToDatabase())
-    self.assertNotEqual(object1.getSongID(), '')
-    song_id = object1.getSongID()
+    self.assertNotEqual(object1.getItem('song_id'), '')
+    song_id = object1.getItem('song_id')
 
     object2 = Song()
-    self.assertTrue(object2.getBy('song_id', song_id))
-    self.assertNotEqual(object2.getSongID(), '')
+    self.assertTrue(object2.getRow( song_id))
+    self.assertNotEqual(object2.getItem('song_id'), '')
     self.assertTrue(object2.deleteFromDatabase())
 
     object3 = Song()
-    self.assertFalse(object3.getBy('song_id', song_id))
-    self.assertEqual(object3.getSongID(), '')
+    self.assertFalse(object3.getRow( song_id))
+    self.assertEqual(object3.getItem('song_id'), '')
     
   def test_duplicateSongs(self):
     object1 = Song(self.data1)
     self.assertTrue(object1.addToDatabase())
-    self.assertNotEqual(object1.getSongID(), '')
+    self.assertNotEqual(object1.getItem('song_id'), '')
 
     object2 = Song(self.data1)
     self.assertFalse(object2.addToDatabase())
-    self.assertEqual(object2.getSongID(), '')
+    self.assertEqual(object2.getItem('song_id'), '')
     
     self.assertTrue(object1.deleteFromDatabase())
 
     
-  def test_isSongNameAvailable(self):
+  def test_notDuplicate(self):
     object1 = Song(self.data2)
     object2 = Song(self.data1)
-    self.assertFalse(object1.isSongNameAvailable())
-    self.assertTrue(object2.isSongNameAvailable())
+    self.assertFalse(object1.notDuplicate())
+    self.assertTrue(object2.notDuplicate())
 
   def test_saveToDatabase(self):
     object = Song()
-    self.assertTrue(object.getBy('song_id', 7))
-    self.assertFalse(object.isSoloRelease())
-    self.assertTrue(object.setSoloRelease(True))
+    self.assertTrue(object.getRow( 7))
+    self.assertFalse(object.getItem('is_solo_release'))
+    self.assertTrue(object.setItem('is_solo_release', 1))
     self.assertTrue(object.saveToDatabase())
-    self.assertTrue(object.isSoloRelease())
-    self.assertTrue(object.setSoloRelease(False))
+    self.assertTrue(object.getItem('is_solo_release'))
+    self.assertTrue(object.setItem('is_solo_release', 0))
     self.assertTrue(object.saveToDatabase())
-    self.assertFalse(object.isSoloRelease())  
+    self.assertFalse(object.getItem('is_solo_release'))  
     

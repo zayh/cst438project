@@ -9,7 +9,7 @@ class DatabaseObject:
     self.data = {}
     if data is not None:
       for key in data:
-        self.data[key] = data[key]
+        self.data[key] = data[key]  
         
   def toJSON(self):
     ''' Returns a JSON string of the object. '''
@@ -38,34 +38,34 @@ class DatabaseObject:
     success = False
     if (1):
       self.data[column] = value
-      sucess = True
+      success = True
     return success
     
-  def getBy(self, column, value):
+  def getRow(self, value):
     ''' 
     Populate the object from the database 
-    Only unique indexes will function. 
-    If more than 1 row is returned, the object will not be populated
-    Test by test_getBy* scripts 
+    Test with test_getRow  
     '''
-    
     # Initialize local variables
     select_columns = ''
     success = False
     noSqlErrors = True
+    table_name = self.getTable()
+    table_layout = self.data['table_layout']
+    table_index = table_layout['0']
     
     cnx = connectToDatabase()
     # Don't proceed if the connection failed
     if cnx != False:
       cursor = cnx.cursor(buffered=True)
       # Use table_layout to make the list of columns
-      for key in self.data['table_layout']:
-        # is this isn't the first column, add a comma to the end
+      for key in table_layout:
+        # if this isn't the first column, add a comma to the end
         if key != '0':
-          select_columns = select_columns + ','
-        select_columns = select_columns + self.data['table_layout'][key]
+          select_columns += ','
+        select_columns += table_layout[key]
       # Now the query can be built
-      query = ("SELECT ", select_columns, " from ", self.data['table_name'], " where {} = %s".format(column))
+      query = ("SELECT {} FROM {} WHERE {} = %s".format(select_columns, table_name, table_index))
       try:
         cursor.execute(query, (value,))
       # Catch any mysql errors
@@ -77,7 +77,7 @@ class DatabaseObject:
         row = cursor.fetchone()
         # Step through table_layout and assign the data retrieved to self.data using setItem()
         for key in table_layout:
-          self.setItem(self.data['table_layout'][key], row[key])
+          self.setItem(table_layout[key], row[int(key)])
         success = True
       cursor.close()
       cnx.close()
@@ -89,7 +89,7 @@ class DatabaseObject:
     ''' Test with test_SaveAndDeleteToDatabase() '''
     success = False
     noSqlErrors = True
-    table_layout = getItem('table_layout')
+    table_layout = self.getItem('table_layout')
     index_column = table_layout['0']
     
     if self.getItem(index_column) == '' and self.notDuplicate() == True:
@@ -101,28 +101,31 @@ class DatabaseObject:
         for key in table_layout:
           if key != '0':
             if key !='1':
-              columns = colums + ','
+              columns = columns + ','
             columns = columns + table_layout[key]
         columns = columns + ')'
         placeholder = '('
-        for (i = 1; i < length(table_layout); i++):
+        for i in range (1, len(table_layout)):
           if i != 1:
             placeholder = placeholder + ','
           placeholder = placeholder + '%s'
-          
-        values = ( )
+        placeholder += ')'
+        
+        valueList = [ ]
         for key in table_layout:
           if key != '0':
-            values.add(self.getItem(table_layout[key]))
+            valueList.append(self.getItem(table_layout[key]))
+        values = tuple(valueList)
         
-        query = ("INSERT INTO " self.getTable() " " columns " VALUES " placeholder)
+        query = ("INSERT INTO {} {} VALUES {}".format(self.getTable(), columns, placeholder))
+
         try:
           cursor.execute( query, values )
         except mysql.connector.Error as err:
           noSqlErrors = False
         if noSqlErrors == True:
-          if self.getBy(index_column, cursor.lastrowid) == True
-            cnx.commit()
+          cnx.commit()
+          if self.getRow(cursor.lastrowid) == True:
             success = True
         cursor.close()
         cnx.close()
@@ -131,7 +134,7 @@ class DatabaseObject:
   def deleteFromDatabase(self):
     ''' Deletes the object from the database '''
     ''' Test with test_SaveAndDeleteFromDatabase '''
-    table_layout = getItem('table_layout')
+    table_layout = self.getItem('table_layout')
     index_column = table_layout['0']   
     success = False
     noSqlErrors = True
@@ -139,7 +142,7 @@ class DatabaseObject:
       cnx = connectToDatabase()
       if cnx != False:
         cursor = cnx.cursor()
-        query = ("DELETE FROM " self.getTable() " WHERE " index_column " = %s")
+        query = ("DELETE FROM {} WHERE {} = %s".format(self.getTable(),index_column))
         try:
           cursor.execute(query, (self.getItem(index_column),))
         except mysql.connector.Error as err:
@@ -153,7 +156,7 @@ class DatabaseObject:
     
   def saveToDatabase(self):
     ''' Saves current object to the database, using the primary index '''
-    table_layout = getItem('table_layout')
+    table_layout = self.getItem('table_layout')
     index_column = table_layout['0']
     success = False
     NoSqlErrors = True
@@ -163,27 +166,56 @@ class DatabaseObject:
         cursor = cnx.cursor()
         
         placeholder = ''
-        values = ( )
+        valueList = [ ]
         for key in table_layout:
           if key != '0':
             if key != '1':
-              placeholder = placeholder + ','
-            placeholder = placeholder + table_layout[key] + " = %s"
-            values.add(getItem(table_layout[key])
-        
-        query = ("UPDATE " self.getTable " SET " placeholder " WHERE " index_column " = %s")
+              placeholder += ','
+            placeholder += table_layout[key] + " = %s"
+            valueList.append(self.getItem(table_layout[key]))
+        valueList.append(self.getItem(index_column))
+        values = tuple(valueList)
+        query = ("UPDATE {} SET {} WHERE {} = %s".format(self.getTable(), placeholder, index_column))
         try:
           cursor.execute(query, values) 
         except mysql.connector.Error as err:
           NoSqlErrors = False
         if NoSqlErrors == True:
           cnx.commit()
-          self.getBy(index_column, cursor.lastrowid)
+          self.getRow(cursor.lastrowid)
           success = True
         cursor.close()
         cnx.close()
     return success
     
-    def notDuplicate(self):
-      pass
+  def notDuplicate(self):
+    ''' Checks to see if the given songname is already in use '''
+    ''' Test with test_notDuplicate '''
+    available = False
+    noSqlErrors = True
+    table_name = self.getTable()
+    table_layout = self.getItem('table_layout')
+    combos = self.getItem('unique_combos')
+    
+    cnx = connectToDatabase()
+    if cnx != False:
+      cursor = cnx.cursor(buffered=True)
       
+      query = "SELECT * FROM " + table_name + " WHERE "
+      query += combos[0] + " = %s"
+      valueList = [ self.getItem(combos[0]) ]
+      
+      for i in range( 1, len(combos) ):
+        query += " AND " + combos[i] + " = %s"
+        valueList.append( self.getItem(combos[i]) )
+      values = tuple(valueList)
+      try:
+        cursor.execute(query, values)
+      except mysql.connector.Error as err:
+        noSqlErrors = False
+      if noSqlErrors == True and cursor.rowcount == 0:
+        available = True
+      cursor.close()
+      cnx.close()
+    return available
+    
