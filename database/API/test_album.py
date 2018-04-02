@@ -3,6 +3,24 @@ from Album import Album
 
 class TestAlbum(unittest.TestCase):
 
+  data1 = { 
+    'album_id' : '',
+    'album_name' : 'This is Spinal Tap',
+    'release_date' : '1984-03-02',
+    'genre' : 'comedy',
+    'url_to_buy' : 'none',
+    'band_id' : 4  
+  }
+  
+  data2 = {
+    'album_id' : '',
+    'album_name' : 'Metallica',
+    'release_date': '2018-03-04',
+    'genre' : 'metal',
+    'url_to_buy' : 'none',
+    'band_id' : 1
+  }
+
   def test_createEmptyAlbum(self):
     object = Album()
     self.assertIsInstance(object, Album)
@@ -15,8 +33,7 @@ class TestAlbum(unittest.TestCase):
     
     
   def test_new(self):
-    object = Album()
-    object.new('This is Spinal Tap', '1984-03-02', 'comedy', 'none', 4)
+    object = Album(self.data1)
     self.assertEqual(object.getAlbumID(), '')
     self.assertEqual(object.getAlbumName(), 'This is Spinal Tap')
     self.assertEqual(object.getReleaseDate(), '1984-03-02')
@@ -25,12 +42,11 @@ class TestAlbum(unittest.TestCase):
     self.assertEqual(object.getBandID(), 4)
     
   def test_toJSON(self):
-    object = Album()
-    object.new('This is Spinal Tap', '1984-03-02', 'comedy', 'none', 4)
+    object = Album(self.data1)
     self.assertEqual(object.toJSON(), 
-      "{ album_id: , album_name: 'This is Spinal Tap', "
-      "release_date: '1984-03-02', genre: 'comedy', "
-      "url_to_buy: 'none', band_id: 4 }"
+      '{"album_id": "", "album_name": "This is Spinal Tap", '
+      '"release_date": "1984-03-02", "genre": "comedy", '
+      '"url_to_buy": "none", "band_id": 4}'
     )
     
   def test_mutators_and_accessors(self):
@@ -59,8 +75,7 @@ class TestAlbum(unittest.TestCase):
     self.assertEqual(object.getAlbumID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Album()
-    self.assertTrue(object1.new('This is Spinal Tap', '1984-03-02', 'comedy', 'none', 4))
+    object1 = Album(self.data1)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getAlbumID(), '')
     album_id = object1.getAlbumID()
@@ -75,13 +90,11 @@ class TestAlbum(unittest.TestCase):
     self.assertEqual(object3.getAlbumID(), '')
     
   def test_duplicateAlbums(self):
-    object1 = Album()
-    self.assertTrue(object1.new('This is Spinal Tap', '1984-03-02', 'comedy', 'none', 4))
+    object1 = Album(self.data1)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getAlbumID(), '')
 
-    object2 = Album()
-    self.assertTrue(object2.new('This is Spinal Tap', '1984-03-03', '', 'nbne', 4))
+    object2 = Album(self.data1)
     self.assertFalse(object2.addToDatabase())
     self.assertEqual(object2.getAlbumID(), '')
     
@@ -89,9 +102,10 @@ class TestAlbum(unittest.TestCase):
 
     
   def test_isAlbumNameAvailable(self):
-    object = Album()
-    self.assertFalse(object.isAlbumNameAvailable('Metallica', 1))
-    self.assertTrue(object.isAlbumNameAvailable('Spinal Tap', 'This is Spinal Tap'))
+    object1 = Album(self.data1)
+    object2 = Album(self.data2)
+    self.assertTrue(object1.isAlbumNameAvailable())
+    self.assertFalse(object2.isAlbumNameAvailable())
 
   def test_saveToDatabase(self):
     object = Album()

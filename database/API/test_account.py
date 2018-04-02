@@ -3,6 +3,18 @@ from Account import Account
 
 class TestAccount(unittest.TestCase):
 
+  data1 = {
+    'account_id' : '',
+    'username'  : 'bobdylan',
+    'firstname' : 'Bob',
+    'lastname'  : 'Dylan',
+    'lyric'     : 'kiss this guy'
+  }
+  
+  data2 = {
+    'username'   : 'jay'
+  }
+
   def test_createEmptyAccout(self):
     object = Account()
     self.assertIsInstance(object, Account)
@@ -14,7 +26,7 @@ class TestAccount(unittest.TestCase):
     self.assertEqual(object.getPassword(), '')
     
   def test_populatedAccount(self):
-    object = Account('bobdylan','Bob','Dylan','kiss this guy')
+    object = Account(self.data1)
     self.assertEqual(object.getAccountID(), '')
     self.assertEqual(object.getUsername(), 'bobdylan')
     self.assertEqual(object.getFirstname(), 'Bob')
@@ -22,13 +34,13 @@ class TestAccount(unittest.TestCase):
     self.assertEqual(object.getLyric(), 'kiss this guy')
     
   def testSetPassword(self):
-    object = Account('bobdylan','Bob','Dylan','kiss this guy')
+    object = Account(self.data1)
     self.assertTrue(object.addPassword('wh4tD1D#eS47?'))
     self.assertTrue(object.checkPassword('wh4tD1D#eS47?'))
     self.assertFalse(object.checkPassword('wh4tD1D#eS47'))
     
   def test_toJSON(self):
-    object = Account('bobdylan','Bob','Dylan','kiss this guy')
+    object = Account(self.data1)
     self.assertTrue(object.addPassword('wh4tD1D#eS47?'))
     self.assertEqual(object.toJSON(), '{"account_id": "", "username": "bobdylan", "firstname": "Bob", "lastname": "Dylan", "lyric": "kiss this guy", "password": "b3e79af50eedc2409663b385c4f194a23699834e4363508953996e195715dd2c"}')
     
@@ -64,7 +76,7 @@ class TestAccount(unittest.TestCase):
     self.assertEqual(object.getAccountID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = Account('bobdylan','Bob','Dylan','kiss this guy')
+    object1 = Account(self.data1)
     self.assertFalse(object1.addToDatabase())
     self.assertTrue(object1.addPassword('wh4tD1D#eS47'))
     self.assertTrue(object1.addToDatabase())
@@ -79,8 +91,8 @@ class TestAccount(unittest.TestCase):
     self.assertEqual(object3.getAccountID(), '')
     
   def test_isUsernameAvailable(self):
-    object1 = Account('bob')
-    object2 = Account('jay')
+    object1 = Account(self.data1)
+    object2 = Account(self.data2)
     self.assertTrue(object1.isUsernameAvailable())
     self.assertFalse(object2.isUsernameAvailable())
     

@@ -4,16 +4,13 @@ import hashlib
 
 class Account:
   
-  def __init__(self, username='', firstname='', lastname='', lyric=''):
+  def __init__(self, data=None):
     ''' Create an object '''
     ''' Test with test_create '''
-    self.data = { 
-      'account_id': '',
-      'username'  : username,
-      'firstname' : firstname,
-      'lastname'  : lastname,
-      'lyric'     : lyric,
-    }
+    self.data = {}
+    if data is not None:
+      for key in data:
+        self.data[key] = data[key]
 
   def getBy(self, column, value):
     ''' Populate the object from the database, using either account_id or username '''
@@ -52,13 +49,7 @@ class Account:
     ''' Takes a jsonStr and populates data '''
     success = False
     data = json.loads(jsonStr)
-    if self.setAccountID(data['account_id']) == True:
-      if self.setUsername(data['username']) == True:
-        if self.setFirstname(data['firstname']) == True:
-          if self.setLastname(data['lastname']) == True:
-            if self.setLyric(data['lyric']) == True:
-              if self.setPassword(data['password']) == True:
-                success = True
+    self.__init__(data)
     return success
   
   def addToDatabase(self):
@@ -95,25 +86,40 @@ class Account:
 
   # Accessors  
   def getAccountID(self):
-    return self.data['account_id']
+    returnVal = ''
+    if 'account_id' in self.data:
+      returnVal = self.data['account_id']
+    return returnVal
     
   def getUsername(self):
-    return self.data['username']
+    returnVal = ''
+    if 'username' in self.data:
+      returnVal = self.data['username']
+    return returnVal
     
   def getFirstname(self):
-    return self.data['firstname']
+    returnVal = ''
+    if 'firstname' in self.data:
+      returnVal = self.data['firstname']
+    return returnVal
     
   def getLastname(self):
-    return self.data['lastname']
-    
+    returnVal = ''
+    if 'lastname' in self.data:
+      returnVal = self.data['lastname']
+    return returnVal
+   
   def getLyric(self):
-    return self.data['lyric']
+    returnVal = ''
+    if 'lyric' in self.data:
+      returnVal = self.data['lyric']
+    return returnVal
     
   def getPassword(self):
-    returnValue = ''
+    returnVal = ''
     if 'password' in self.data:
-      returnValue = self.data['password']
-    return returnValue
+      returnVal = self.data['password']
+    return returnVal
 
   # Mutators
   # Test with test_Mutators()
