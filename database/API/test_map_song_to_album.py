@@ -3,6 +3,19 @@ from MapSongToAlbum import MapSongToAlbum
 
 class TestMapSongToAlbum(unittest.TestCase):
 
+  data1 = {
+    'map_song_to_album_id' : '',
+    'song_id'      : 1,
+    'album_id'     : 2,
+    'track_number' : 1
+  }
+  
+  data2 = {
+    'song_id'      : 7,
+    'album_id'     : 2,
+    'track_number' : 8
+  }
+
   def test_createEmptyMapSongToAlbum(self):
     object = MapSongToAlbum()
     self.assertIsInstance(object, MapSongToAlbum)
@@ -12,18 +25,30 @@ class TestMapSongToAlbum(unittest.TestCase):
     self.assertEqual(object.getTrackNumber(), '')
     
   def test_new(self):
-    object = MapSongToAlbum()
-    object.new(1, 2, 1);
+    object = MapSongToAlbum(self.data1)
     self.assertEqual(object.getMapSongToAlbumID(), '')
     self.assertEqual(object.getSongID(), 1)
     self.assertEqual(object.getAlbumID(), 2)
+    self.assertEqual(object.getTrackNumber(), 1)
     
   def test_toJSON(self):
-    object = MapSongToAlbum()
-    object.new(1, 2, 1)
+    object = MapSongToAlbum(self.data1)
     self.assertEqual(object.toJSON(), 
-      "{ map_song_to_album_id: , song_id: 1, album_id: 2, track_number: 1 }" 
+      '{"map_song_to_album_id": "", "song_id": 1, "album_id": 2, "track_number": 1}'
     )
+    
+  def test_fromJSON(self):
+    object1 = MapSongToAlbum(self.data1)
+    jsonStr = object1.toJSON()
+    
+    object2 = MapSongToAlbum()
+    self.assertEqual(object2.getSongID(), '')
+    self.assertEqual(object2.getAlbumID(), '')
+    self.assertEqual(object2.getTrackNumber(), '')
+    object2.fromJSON(jsonStr)
+    self.assertEqual(object2.getSongID(), 1)
+    self.assertEqual(object2.getAlbumID(), 2)
+    self.assertEqual(object2.getTrackNumber(), 1)
     
   def test_mutators_and_accessors(self):
     object1 = MapSongToAlbum()
@@ -48,8 +73,7 @@ class TestMapSongToAlbum(unittest.TestCase):
     self.assertEqual(object.getMapSongToAlbumID(), '')
     
   def test_SaveAndDeleteFromDatabase(self):
-    object1 = MapSongToAlbum()
-    self.assertTrue(object1.new(7, 2, 8))
+    object1 = MapSongToAlbum(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getMapSongToAlbumID(), '')
     map_song_to_album_id = object1.getMapSongToAlbumID()
@@ -64,13 +88,11 @@ class TestMapSongToAlbum(unittest.TestCase):
     self.assertEqual(object3.getMapSongToAlbumID(), '')
     
   def test_duplicateMapSongToAlbums(self):
-    object1 = MapSongToAlbum()
-    self.assertTrue(object1.new(7, 2, 8))
+    object1 = MapSongToAlbum(self.data2)
     self.assertTrue(object1.addToDatabase())
     self.assertNotEqual(object1.getMapSongToAlbumID(), '')
 
-    object2 = MapSongToAlbum()
-    self.assertTrue(object1.new(7, 2, 8))
+    object2 = MapSongToAlbum(self.data2)
     self.assertFalse(object2.addToDatabase())
     self.assertEqual(object2.getMapSongToAlbumID(), '')
     
