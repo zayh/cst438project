@@ -2,7 +2,7 @@ import unittest
 from Rating2 import Rating
 
 class TestRating(unittest.TestCase):
-
+  # Test data for the test cases below
   data1 = {
     'rating_id': '',
     'account_id': 3,
@@ -29,6 +29,8 @@ class TestRating(unittest.TestCase):
     'date': '2017-03-02'
   }
   def test_createEmptyRating(self):
+    # Create an empty object. Test to see that the object is of the right type and all
+    # columns are empty
     object = Rating()
     self.assertIsInstance(object, Rating)
     self.assertEqual(object.getItem('rating_id'), '')
@@ -38,8 +40,8 @@ class TestRating(unittest.TestCase):
     self.assertEqual(object.getItem('comment'), '')
     self.assertEqual(object.getItem('date'), '')
     
-    
   def test_new(self):
+    # Test the non empty constructor
     object = Rating(self.data1)
     self.assertEqual(object.getItem('rating_id'), '')
     self.assertEqual(object.getItem('date'), '2018-03-02')
@@ -49,9 +51,10 @@ class TestRating(unittest.TestCase):
     self.assertEqual(object.getItem('comment'), "I don't actually own this album")
     
   def test_JSON(self):
+    # Outputs the object as a JSON String
     object1 = Rating(self.data1)
     jsonStr = object1.toJSON()
-    
+    # Then populates a new object with it
     object2 = Rating()
     self.assertEqual(object2.getItem('account_id'), '')
     self.assertEqual(object2.getItem('album_id'), '')
@@ -63,6 +66,8 @@ class TestRating(unittest.TestCase):
     
     
   def test_mutators_and_accessors(self):
+    # Check that mutators and accessors function
+    # (These are inherited from the parent class now)
     object1 = Rating()
     self.assertTrue(object1.setItem('comment',"I don't actually own this album"))
     self.assertTrue(object1.setItem('date','2018-03-02'))
@@ -77,6 +82,7 @@ class TestRating(unittest.TestCase):
     self.assertEqual(object1.getItem('rating'), 4)
     
   def test_getByRatingID(self):
+    # getRow() populates the object by using the primary key
     object = Rating()
     self.assertTrue(object.getRow(4))
     self.assertNotEqual(object.getItem('rating_id'), '')

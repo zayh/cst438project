@@ -2,7 +2,7 @@ import unittest
 from Band import Band
 
 class TestBand(unittest.TestCase):
-
+  # Test data for the test cases below
   data1 = {
     'band_id' : '',
     'band_name': 'Spinal Tap'
@@ -22,6 +22,8 @@ class TestBand(unittest.TestCase):
   }
   
   def test_createEmptyBand(self):
+    # Create an empty object. Test to see that the object is of the right type and all
+    # columns are empty
     object = Band()
     self.assertIsInstance(object, Band)
     self.assertEqual(object.getItem('band_id'), '')
@@ -29,6 +31,7 @@ class TestBand(unittest.TestCase):
     self.assertEqual(object.getItem('band_name'), '')
     
   def test_createNonEmptyBand(self):
+    # Test the non empty constructor
     object1 = Band(self.data1)
     self.assertEqual(object1.getItem('band_id'), '')
     self.assertEqual(object1.getItem('band_name'), 'Spinal Tap')
@@ -40,15 +43,18 @@ class TestBand(unittest.TestCase):
     self.assertTrue(object2.getItem('is_solo_artist'))
     
   def test_JSON(self):
+    # Outputs the object as a JSON String
     object1 = Band(self.data2)
     dataStr = object1.toJSON()
-    
+    # Then populates a new object with it
     object2 = Band()
     object2.fromJSON(dataStr)
     self.assertEqual(object2.getItem('band_name'), 'Prince')
     self.assertTrue(object2.getItem('is_solo_artist'))
     
   def test_mutators_and_accessors(self):
+    # Check that mutators and accessors function
+    # (These are inherited from the parent class now)
     object1 = Band(self.data3)
     object1.setItem('is_solo_artist', 1)
 
@@ -61,6 +67,7 @@ class TestBand(unittest.TestCase):
     self.assertFalse(object2.getItem('is_solo_artist'))
     
   def test_getRow(self):
+    # getRow() populates the object by using the primary key
     object = Band()
     self.assertTrue(object.getRow(1))
     self.assertNotEqual(object.getItem('band_id'), '')

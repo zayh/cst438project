@@ -2,7 +2,7 @@ import unittest
 from Favorite import Favorite
 
 class TestFavorite(unittest.TestCase):
-
+  # Test data for the test cases below
   data1 = {
     'favorite_id' : '',
     'account_id' : 3,
@@ -16,6 +16,8 @@ class TestFavorite(unittest.TestCase):
   }
 
   def test_createEmptyFavorite(self):
+    # Create an empty object. Test to see that the object is of the right type and all
+    # columns are empty
     object = Favorite()
     self.assertIsInstance(object, Favorite)
     self.assertEqual(object.getItem('favorite_id'), '')
@@ -23,24 +25,28 @@ class TestFavorite(unittest.TestCase):
     self.assertEqual(object.getItem('album_id'), '')
     
   def test_new(self):
+    # Test the non empty constructor 
     object = Favorite(self.data1);
     self.assertEqual(object.getItem('favorite_id'), '')
     self.assertEqual(object.getItem('account_id'), 3)
     self.assertEqual(object.getItem('album_id'), 2)
     
   def test_JSON(self):
+    # Outputs the object as a JSON String
     object1 = Favorite(self.data1)
     jsonStr = object1.toJSON()
     
     object2 = Favorite()
     self.assertEqual(object2.getItem('account_id'), '')
     self.assertEqual(object2.getItem('album_id'), '')
-    
+    # Then populates a new object with it
     object2.fromJSON(jsonStr)
     self.assertEqual(object2.getItem('account_id'), 3)
     self.assertEqual(object2.getItem('album_id'), 2)  
     
   def test_mutators_and_accessors(self):
+    # Check that mutators and accessors function
+    # (These are inherited from the parent class now)
     object1 = Favorite()
     self.assertTrue(object1.setItem('account_id',3))
     self.assertTrue(object1.setItem('album_id',2))
@@ -48,16 +54,12 @@ class TestFavorite(unittest.TestCase):
     self.assertEqual(object1.getItem('album_id'), 2)
     
   def test_getByFavoriteID(self):
+    # getRow() populates the object by using the primary key
     object = Favorite()
     self.assertTrue(object.getRow(1))
     self.assertNotEqual(object.getItem('favorite_id'), '')
     self.assertEqual(object.getItem('account_id'), 3)
     self.assertEqual(object.getItem('album_id'), 2)
-    
-  def test_getByError(self):
-    object = Favorite()
-    self.assertFalse(object.getRow(3))
-    self.assertEqual(object.getItem('favorite_id'), '')
     
   def test_SaveAndDeleteFromDatabase(self):
     object1 = Favorite(self.data2)

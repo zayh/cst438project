@@ -2,7 +2,7 @@ import unittest
 from Wishlist import Wishlist
 
 class TestWishlist(unittest.TestCase):
-
+  # Test data for the test cases below
   data1 = {
     'wishlist_id' : '',
     'account_id': 1,
@@ -15,6 +15,8 @@ class TestWishlist(unittest.TestCase):
   }
 
   def test_createEmptyWishlist(self):
+    # Create an empty object. Test to see that the object is of the right type and all
+    # columns are empty
     object = Wishlist()
     self.assertIsInstance(object, Wishlist)
     self.assertEqual(object.getItem('wishlist_id'), '')
@@ -22,15 +24,17 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object.getItem('album_id'), '')
     
   def test_new(self):
+    # Test the non empty constructor
     object = Wishlist(self.data1);
     self.assertEqual(object.getItem('wishlist_id'), '')
     self.assertEqual(object.getItem('account_id'), 1)
     self.assertEqual(object.getItem('album_id'), 2)
     
   def test_toJSON(self):
+    # Outputs the object as a JSON String
     object1 = Wishlist(self.data1)
     jsonStr = object1.toJSON()
-    
+    # Then populates a new object with it
     object2 = Wishlist()
     self.assertEqual(object2.getItem('account_id'), '')
     self.assertEqual(object2.getItem('album_id'), '')
@@ -39,6 +43,8 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object2.getItem('album_id'), 2)
     
   def test_mutators_and_accessors(self):
+    # Check that mutators and accessors function
+    # (These are inherited from the parent class now)
     object1 = Wishlist()
     self.assertTrue(object1.setItem('account_id',1))
     self.assertTrue(object1.setItem('album_id',2))
@@ -46,6 +52,7 @@ class TestWishlist(unittest.TestCase):
     self.assertEqual(object1.getItem('album_id'), 2)
     
   def test_getRow(self):
+    # getRow() populates the object by using the primary key
     object = Wishlist()
     self.assertTrue(object.getRow(1))
     self.assertNotEqual(object.getItem('wishlist_id'), '')
