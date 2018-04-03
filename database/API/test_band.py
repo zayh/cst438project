@@ -2,7 +2,7 @@ import unittest
 from Band import Band
 
 class TestBand(unittest.TestCase):
-
+  # Test data for the test cases below
   data1 = {
     'band_id' : '',
     'band_name': 'Spinal Tap'
@@ -22,94 +22,82 @@ class TestBand(unittest.TestCase):
   }
   
   def test_createEmptyBand(self):
+    # Create an empty object. Test to see that the object is of the right type and all
+    # columns are empty
     object = Band()
     self.assertIsInstance(object, Band)
-    self.assertEqual(object.getBandID(), '')
-    self.assertFalse(object.isSoloArtist(), '')
-    self.assertEqual(object.getBandName(), '')
+    self.assertEqual(object.getItem('band_id'), '')
+    self.assertEqual(object.getItem('is_solo_artist'), '')
+    self.assertEqual(object.getItem('band_name'), '')
     
   def test_createNonEmptyBand(self):
+    # Test the non empty constructor
     object1 = Band(self.data1)
-    self.assertEqual(object1.getBandID(), '')
-    self.assertEqual(object1.getBandName(), 'Spinal Tap')
-    self.assertFalse(object1.isSoloArtist())
+    self.assertEqual(object1.getItem('band_id'), '')
+    self.assertEqual(object1.getItem('band_name'), 'Spinal Tap')
+    self.assertFalse(object1.getItem('is_solo_artist'))
     
     object2 = Band(self.data2)
-    self.assertEqual(object2.getBandID(), '')
-    self.assertEqual(object2.getBandName(), 'Prince')
-    self.assertTrue(object2.isSoloArtist())
+    self.assertEqual(object2.getItem('band_id'), '')
+    self.assertEqual(object2.getItem('band_name'), 'Prince')
+    self.assertTrue(object2.getItem('is_solo_artist'))
     
-  def test_toJSON(self):
-    object1 = Band(self.data1)
-    self.assertEqual(object1.toJSON(), '{"band_id": "", "band_name": "Spinal Tap"}')
-    
-    object2 = Band(self.data2)
-    self.assertEqual(object2.toJSON(), '{"band_name": "Prince", "is_solo_artist": true}')
-  
-  def test_fromJSON(self):
+  def test_JSON(self):
+    # Outputs the object as a JSON String
     object1 = Band(self.data2)
     dataStr = object1.toJSON()
-    
+    # Then populates a new object with it
     object2 = Band()
-    self.assertTrue(object2.fromJSON(dataStr))
-    self.assertEqual(object2.getBandName(), 'Prince')
+    object2.fromJSON(dataStr)
+    self.assertEqual(object2.getItem('band_name'), 'Prince')
+    self.assertTrue(object2.getItem('is_solo_artist'))
     
   def test_mutators_and_accessors(self):
+    # Check that mutators and accessors function
+    # (These are inherited from the parent class now)
     object1 = Band(self.data3)
-    object1.setSoloArtist(True)
+    object1.setItem('is_solo_artist', 1)
 
     object2 = Band(self.data2)
-    object2.setSoloArtist(False)
+    object2.setItem('is_solo_artist', 0)
     
-    self.assertEqual(object1.getBandName(), 'Def Leppard')
-    self.assertEqual(object2.getBandName(), 'Prince')
-    self.assertTrue(object1.isSoloArtist())
-    self.assertFalse(object2.isSoloArtist())
+    self.assertEqual(object1.getItem('band_name'), 'Def Leppard')
+    self.assertEqual(object2.getItem('band_name'), 'Prince')
+    self.assertTrue(object1.getItem('is_solo_artist'))
+    self.assertFalse(object2.getItem('is_solo_artist'))
     
-  def test_getByBandName(self):
+  def test_getRow(self):
+    # getRow() populates the object by using the primary key
     object = Band()
-    self.assertTrue(object.getBy('band_name','Metallica'))
-    self.assertNotEqual(object.getBandID(), '')
-    self.assertEqual(object.getBandID(), 1)
-    
-  def test_getByBandID(self):
-    object = Band()
-    self.assertTrue(object.getBy('band_id', 1))
-    self.assertNotEqual(object.getBandID(), '')
-    self.assertEqual(object.getBandName(), 'Metallica')
-    
-  def test_getByError(self):
-    object = Band()
-    self.assertFalse(object.getBy('is_solo_artist', '1'))
-    self.assertEqual(object.getBandID(), '')
+    self.assertTrue(object.getRow(1))
+    self.assertNotEqual(object.getItem('band_id'), '')
+    self.assertEqual(object.getItem('band_name'), 'Metallica')
+
     
   def test_SaveAndDeleteFromDatabase(self):
     object1 = Band(self.data1)
     object1.addToDatabase()
+    band_id = object1.getItem('band_id')
 
     object2 = Band()
-    self.assertTrue(object2.getBy('band_name', 'Spinal Tap'))
-    self.assertNotEqual(object2.getBandID, '')
+    self.assertTrue(object2.getRow(band_id))
+    self.assertEqual(object2.getItem('band_name'), 'Spinal Tap')
     object2.deleteFromDatabase()
-
-    object3 = Band()
-    self.assertFalse(object3.getBy('band_name', 'Spinal Tap'))
-    self.assertEqual(object3.getBandID(), '')
     
-  def test_isBandNameAvailable(self):
+  def test_notDuplicate(self):
     object1 = Band(self.data4)
     object2 = Band(self.data1)
-    self.assertFalse(object1.isBandNameAvailable())
-    self.assertTrue(object2.isBandNameAvailable())
+    self.assertFalse(object1.notDuplicate())
+    self.assertTrue(object2.notDuplicate())
 
   def test_saveToDatabase(self):
     object = Band()
-    self.assertTrue(object.getBy('band_id', 4))
-    self.assertFalse(object.isSoloArtist())
-    self.assertTrue(object.setSoloArtist(True))
+    self.assertTrue(object.getRow(4))
+    self.assertFalse(object.getItem('is_solo_artist'))
+    self.assertTrue(object.setItem('is_solo_artist', 1))
     self.assertTrue(object.saveToDatabase())
-    self.assertTrue(object.isSoloArtist())
-    self.assertTrue(object.setSoloArtist(False))
+    self.assertTrue(object.getItem('is_solo_artist'))
+    self.assertTrue(object.setItem('is_solo_artist', 0))
     self.assertTrue(object.saveToDatabase())
-    self.assertFalse(object.isSoloArtist())   
+    self.assertFalse(object.getItem('is_solo_artist'))   
     
