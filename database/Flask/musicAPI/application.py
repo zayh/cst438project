@@ -5,6 +5,7 @@ from sqlalchemy import BigInteger, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import DeclarativeMeta
 import json
 import datetime
 import hashlib
@@ -17,6 +18,30 @@ application = Flask(__name__)
 
 session = Session()
 
+class Cypher:
+   def hashPassword(passwordInText):
+        return hashlib.sha256( passwordInText.encode('utf-8') ).hexdigest()
+
+class AlchemyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj.__class__, DeclarativeMeta):
+            # an SQLAlchemy class
+            fields = {}
+            for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
+                data = obj.__getattribute__(field)
+                try:
+                    # Convert dates to strings
+                    if isinstance(data, datetime.date):
+                        data = data.isoformat()
+                    json.dumps(data) # this will fail on non-encodable values, like other classes
+                    fields[field] = data
+                except TypeError:
+                    fields[field] = None
+            # a json-encodable dict
+            return fields
+
+        return json.JSONEncoder.default(self, obj)
+
 class Account(Base):
     __tablename__ = 'account'
     
@@ -27,27 +52,7 @@ class Account(Base):
     lyric = Column(Text)
     password = Column(String(500), nullable=False)
     role = Column(String(10), nullable=False, default='user')
-    
-    def hashPassword(passwordInText):
-        return hashlib.sha256( passwordInText.encode('utf-8') ).hexdigest()
 
-    def toJSON(self):
-        returnVal = '{' 
-        returnVal += '"account_id": ' 
-        returnVal += str(self.account_id)
-        returnVal += ', "username": "' 
-        returnVal += self.username 
-        returnVal += '"' 
-        returnVal += ', "firstname": "' 
-        returnVal += self.firstname 
-        returnVal += '"' 
-        returnVal += ', "lastname": "' 
-        returnVal += self.lastname 
-        returnVal += '"'
-        returnVal += ', "role": "' 
-        returnVal += self.role + '"' 
-        returnVal += '}'
-        return returnVal
         
 class Album(Base):
     __tablename__ = 'album'
@@ -66,14 +71,6 @@ class Band(Base):
     band_id = Column(BigInteger, primary_key=True)
     band_name = Column(String(50), nullable=False)
     is_solo_artist = Column(Boolean(), default=False)
-    
-    def toJSON(self):
-        data = {
-            'band_id' : self.band_id,
-            'band_name' : self.band_name,
-            'is_solo_artist' : self.is_solo_artist
-        }
-        return json.dumps(data)
    
 class Favorite(Base):
     __tablename__ = 'favorite'
@@ -91,7 +88,9 @@ class Rating(Base):
     account_id = Column(BigInteger, ForeignKey("account.account_id",
         onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     album_id = Column(BigInteger, ForeignKey("album.album_id", 
-        onupdate="CASCADE", ondelete="CASCADE"), nullable=False)    
+        onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    rating = Column(Integer, nullable=False)
+    comment = Column(Text)
         
 class Song(Base):
     __tablename__ = 'song'
@@ -148,7 +147,7 @@ def get_albums():
 @application.route('/bands/')
 def get_bands():
     results = session.execute("select * from band")
-    return json.dumps([dict(r) for r in results], default=alchemyencoder)
+    return json.dumps([dict(r) for r in results], default=AlchemyEncoder)
 
 @application.route('/login', methods=['GET','POST'])
 def login():
@@ -171,7 +170,7 @@ def add_user():
             if 'firstname' in request.form and 'lastname' in request.form:
                 newuser = Account(
                     username=request.form['username'],
-                    password=Account.hashPassword(request.form['password']),
+                    password=Cypger.hashPassword(request.form['password']),
                     firstname=request.form['firstname'],
                     lastname=request.form['lastname'],
                 )
@@ -197,7 +196,7 @@ def get_ratings():
 @application.route('/songs/')
 def get_songs():
     results = session.execute("select * from song")
-    return json.dumps([dict(r) for r in results], default=alchemyencoder)
+    return json.dumps([dict(r) for r in results], default=AlchemyEncoder)
   
 @application.route('/wishlists/')
 def get_wishlists():
@@ -209,7 +208,7 @@ def valid_login(user, password):
     success = False
     user = session.query(Account).filter(Account.username == user).first()
     if user is not None:
-        if user.password == Account.hashPassword(password):
+        if user.password == Cypher.hashPassword(password):
             success = True
     return success
     
