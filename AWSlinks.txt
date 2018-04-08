@@ -1,1 +1,7 @@
 just the links to the AWS depolyments so that we all have access to them
+
+
+MySQL Instance: mysql://webapp:centralSolutions123@18.222.66.236/musicproject
+
+Python REST API Documentation: http://18.219.102.221/
+REST API: http://18.219.102.221/api
