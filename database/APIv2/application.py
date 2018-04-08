@@ -92,4 +92,4 @@ manager.create_api(Wishlist, methods=['GET', 'POST', 'DELETE'])
         
 @app.route('/')
 def show_api():
-    return flask.render_template('index.html')
+    return flask.render_template('index.html', baseURL='http://18.219.102.221')
