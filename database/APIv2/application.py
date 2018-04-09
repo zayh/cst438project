@@ -28,7 +28,7 @@ class Album(db.Model):
     
     album_id = db.Column(db.BigInteger, primary_key=True)
     album_name = db.Column(db.String(50), nullable=False)
-    release_date = db.Column(db.DateTime)
+    release_date = db.Column(db.Date)
     genre = db.Column(db.String(50), nullable=True)
     url_to_buy = db.Column(db.String(500), nullable=True)
     band_id = db.Column(db.BigInteger, db.ForeignKey("band.band_id", onupdate="CASCADE", 
@@ -38,7 +38,7 @@ class Band(db.Model):
     __tablename__ = 'band'
     
     band_id = db.Column(db.BigInteger, primary_key=True)
-    band_name = db.Column(db.String(50), nullable=False)
+    band_name = db.Column(db.String(50), unique=True, nullable=False)
    
 class Favorite(db.Model):
     __tablename__ = 'favorite'
@@ -53,12 +53,14 @@ class Rating(db.Model):
     __tablename__ = 'rating'
     
     rating_id = db.Column(db.BigInteger, primary_key=True)
+    rating_date = db.Column(db.Date)
     account_id = db.Column(db.BigInteger, db.ForeignKey("account.account_id",
         onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     album_id = db.Column(db.BigInteger, db.ForeignKey("album.album_id", 
         onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
+    
         
 class Song(db.Model):
     __tablename__ = 'song'
