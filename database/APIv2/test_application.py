@@ -165,8 +165,6 @@ class TestDBAPIRequests(unittest.TestCase):
         delete_band = requests.delete(self.base_url + 'band/' + str(new_band_id))
         self.assertEqual(delete_band.status_code, 204)
         
-        
-
-
 if __name__ == '__main__':
     unittest.main()
+    
