@@ -4,6 +4,17 @@
 
 	if (isset($_POST['username'])){
 	//put db connection here
+        $servername = "18.222.66.236";
+        $username = "webapp";
+        $password = "centralSolutions123";
+        $dbname = "musicproject";
+        
+        $dbConn new mysqli($servername, $username, $password, $dbname);
+        
+        if ($dbConn->connect_error) {
+            die("Connection failed: " . $conn->connect_error
+        }
+        
 	require '';
 	
 	$sql = "SELECT *
@@ -12,7 +23,7 @@
 			AND password = :password";
 
 	$stmt = $dbConn -> prepare($sql);
-	$stmt -> execute(array(":username" => $_POST['username'], ":password" => hash("sha1", $_POST['password'])));
+	$stmt -> execute(array(":username" => $_POST['username'], ":password" => hash("sha256", $_POST['password'])));
 
 	$record = $stmt -> fetch();
 
