@@ -84,13 +84,13 @@ class Wishlist(db.Model):
 # Create the API manager
 manager = flask_restless.APIManager(app, flask_sqlalchemy_db=db)
 
-manager.create_api(Account, methods=['GET', 'POST', 'DELETE'])
-manager.create_api(Album, methods=['GET', 'POST', 'DELETE'])
-manager.create_api(Band, methods=['GET', 'POST', 'DELETE'])
-manager.create_api(Favorite, methods=['GET', 'POST', 'DELETE'])
-manager.create_api(Rating, methods=['GET', 'POST', 'DELETE'])
-manager.create_api(Song, methods=['GET', 'POST', 'DELETE'])
-manager.create_api(Wishlist, methods=['GET', 'POST', 'DELETE'])
+manager.create_api(Account, methods=['GET', 'POST', 'DELETE', 'PUT'])
+manager.create_api(Album, methods=['GET', 'POST', 'DELETE', 'PUT'])
+manager.create_api(Band, methods=['GET', 'POST', 'DELETE', 'PUT'])
+manager.create_api(Favorite, methods=['GET', 'POST', 'DELETE', 'PUT'])
+manager.create_api(Rating, methods=['GET', 'POST', 'DELETE', 'PUT'])
+manager.create_api(Song, methods=['GET', 'POST', 'DELETE', 'PUT'])
+manager.create_api(Wishlist, methods=['GET', 'POST', 'DELETE', 'PUT'])
         
 @app.route('/')
 def show_api():
