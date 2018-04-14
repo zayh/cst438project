@@ -15,7 +15,6 @@
             die("Connection failed: " . $conn->connect_error
         }
         
-	require '';
 	
 	$sql = "SELECT *
 			FROM account
