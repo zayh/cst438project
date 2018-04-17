@@ -3,19 +3,9 @@
 	session_start();
 
 	if (isset($_POST['username'])){
-	//put db connection here
-        $servername = "18.222.66.236";
-        $username = "webapp";
-        $password = "centralSolutions123";
-        $dbname = "musicproject";
-        
-        $dbConn new mysqli($servername, $username, $password, $dbname);
-        
-        if ($dbConn->connect_error) {
-            die("Connection failed: " . $conn->connect_error
-        }
-        
-	
+	//db connection
+	require 'db_connection.php';
+      
 	$sql = "SELECT *
 			FROM account
 			WHERE username = :username
